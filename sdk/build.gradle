@@ -2,8 +2,10 @@ plugins {
     id 'java-library'
     id 'eclipse'
     id 'com.diffplug.spotless' version '6.8.0'
+    id 'maven-publish'
 }
 
+group = 'co.decodable'
 version = '1.0.0-SNAPSHOT'
 
 repositories {
@@ -12,16 +14,19 @@ repositories {
 
 dependencies {
     api 'org.apache.flink:flink-core:1.15.4'
-    implementation 'org.apache.flink:flink-connector-kafka:1.15.4'
-    implementation 'org.apache.flink:flink-streaming-java:1.15.4'
+    implementation 'org.apache.flink:flink-connector-kafka:1.16.1'
+    implementation 'org.apache.flink:flink-streaming-java:1.16.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 
-    testImplementation 'org.apache.flink:flink-clients:1.15.4'
+    testImplementation 'org.apache.flink:flink-clients:1.16.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
     testImplementation 'org.testcontainers:redpanda:1.18.3'
     testImplementation 'org.testcontainers:junit-jupiter:1.18.3'
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
 }
+
 
 tasks.named('jar') {
     manifest {
@@ -45,9 +50,30 @@ spotless {
         removeUnusedImports()
         googleJavaFormat('1.15.0')
         licenseHeader '''/*
- * Copyright the original authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright Decodable, Inc.
  *
  * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
  */'''
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+
+            pom.withXml {
+                asNode().dependencies.'*'.each() {
+                    if (it.artifactId.text() == 'flink-core' || it.artifactId.text() == 'flink-streaming-java') {
+                        it.scope*.value = 'provided'
+                    }
+                    else if (it.artifactId.text() == 'flink-connector-kafka') {
+                        it.scope*.value = 'compile'
+                    }
+                }
+            }
+        }
     }
 }

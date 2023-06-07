@@ -10,3 +10,10 @@ bin
 
 # VSCode
 .vscode
+
+# Apache Maven
+dependency-reduced-pom.xml
+target
+
+# Misc.
+.DS_Store
