@@ -1,0 +1,53 @@
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'com.diffplug.spotless' version '6.8.0'
+}
+
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api 'org.apache.flink:flink-core:1.15.4'
+    implementation 'org.apache.flink:flink-connector-kafka:1.15.4'
+    implementation 'org.apache.flink:flink-streaming-java:1.15.4'
+
+    testImplementation 'org.apache.flink:flink-clients:1.15.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+    testImplementation 'org.testcontainers:redpanda:1.18.3'
+    testImplementation 'org.testcontainers:junit-jupiter:1.18.3'
+    testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                   'Implementation-Version': project.version)
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform() 
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+spotless {
+    java {
+        removeUnusedImports()
+        googleJavaFormat('1.15.0')
+        licenseHeader '''/*
+ * Copyright the original authors.
+ *
+ * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
+ */'''
+    }
+}
