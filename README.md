@@ -1,7 +1,7 @@
 # Decodable Java SDK
 
-This repository contains a software development kit (SDK) for implementing Apache Flink jobs and running them on Decodable.
-It integrates Flink with the Decodable environment, for instance providing easy access to Decodable streams.
+This repository contains a software development kit (SDK) for implementing [Apache Flink](https://flink.apache.org/) jobs
+and running them on Decodable as a [custom pipeline](https://docs.decodable.co/docs/create-pipelines-using-your-own-apache-flink-jobs).
 
 ## Structure
 
