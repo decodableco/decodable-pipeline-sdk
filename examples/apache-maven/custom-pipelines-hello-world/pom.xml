@@ -53,7 +53,11 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>2.15.2</version>
 		</dependency>
-
+		<dependency>
+			<groupId>software.amazon.msk</groupId>
+			<artifactId>aws-msk-iam-auth</artifactId>
+			<version>1.1.6</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
