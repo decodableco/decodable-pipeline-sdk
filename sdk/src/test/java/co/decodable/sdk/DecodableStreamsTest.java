@@ -58,8 +58,7 @@ public class DecodableStreamsTest {
 
       Future<RecordMetadata> sent =
           producer.send(
-              new ProducerRecord<>(
-                  testEnvironment.topicFor(PURCHASE_ORDERS), key, value));
+              new ProducerRecord<>(testEnvironment.topicFor(PURCHASE_ORDERS), key, value));
 
       // wait for record to be ack-ed
       sent.get();
