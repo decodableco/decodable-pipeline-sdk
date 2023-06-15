@@ -17,7 +17,7 @@
 	<version>0.1</version>
 	<packaging>jar</packaging>
 
-	<name>Decodable SDK Example</name>
+	<name>Decodable Pipeline SDK Example</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,7 +45,7 @@
 
 		<dependency>
 			<groupId>co.decodable</groupId>
-			<artifactId>decodable-sdk-java</artifactId>
+			<artifactId>decodable-pipeline-sdk</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
