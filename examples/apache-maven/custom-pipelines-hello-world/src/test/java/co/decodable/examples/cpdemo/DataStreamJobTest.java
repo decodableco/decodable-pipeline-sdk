@@ -70,7 +70,7 @@ public class DataStreamJobTest {
           + "}";
 
       Future<RecordMetadata> sent =
-          producer.send(new ProducerRecord<String, String>(testEnvironment.topicFor(PURCHASE_ORDERS), key, value));
+          producer.send(new ProducerRecord<>(testEnvironment.topicFor(PURCHASE_ORDERS), key, value));
 
       // wait for record to be ack-ed
       sent.get();
