@@ -34,8 +34,8 @@ import org.testcontainers.redpanda.RedpandaContainer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import co.decodable.sdk.EnvironmentAccess;
-import co.decodable.sdk.testing.TestEnvironment;
+import co.decodable.sdk.pipeline.EnvironmentAccess;
+import co.decodable.sdk.pipeline.testing.TestEnvironment;
 
 @Testcontainers
 public class DataStreamJobTest {

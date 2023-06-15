@@ -16,8 +16,8 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import co.decodable.sdk.DecodableStreamSink;
-import co.decodable.sdk.DecodableStreamSource;
+import co.decodable.sdk.pipeline.DecodableStreamSink;
+import co.decodable.sdk.pipeline.DecodableStreamSource;
 
 public class DataStreamJob {
 

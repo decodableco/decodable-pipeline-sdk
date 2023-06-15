@@ -1,4 +1,4 @@
-# Decodable Java SDK
+# Decodable Pipeline SDK
 
 _Version 1.0.0-SNAPSHOT_
 
@@ -19,7 +19,7 @@ Then add the SDK dependency to the _pom.xml_ of your Maven project:
 ...
 <dependency>
 	<groupId>co.decodable</groupId>
-	<artifactId>decodable-sdk-java</artifactId>
+	<artifactId>decodable-pipeline-sdk</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 </dependency>
 ...
@@ -29,7 +29,7 @@ Or, to your _build.gradle_ when using Gradle:
 
 ```
 ...
-implementation 'co.decodable:decodable-sdk-java:1.0.0-SNAPSHOT'
+implementation 'co.decodable:decodable-pipeline-sdk:1.0.0-SNAPSHOT'
 ...
 ```
 
