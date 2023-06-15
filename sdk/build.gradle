@@ -1,3 +1,10 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright Decodable, Inc.
+ *
+ * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
+ */
 plugins {
     id 'java-library'
     id 'eclipse'
@@ -13,9 +20,11 @@ repositories {
 }
 
 dependencies {
-    api 'org.apache.flink:flink-core:1.15.4'
-    implementation 'org.apache.flink:flink-connector-kafka:1.16.1'
-    implementation 'org.apache.flink:flink-streaming-java:1.16.1'
+    def flinkVersion = '1.16.1'
+
+    api "org.apache.flink:flink-core:$flinkVersion"
+    implementation "org.apache.flink:flink-connector-kafka:$flinkVersion"
+    implementation "org.apache.flink:flink-streaming-java:$flinkVersion"
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 
     testImplementation 'org.apache.flink:flink-clients:1.16.1'
@@ -26,7 +35,6 @@ dependencies {
     testImplementation 'org.slf4j:slf4j-simple:1.7.36'
     testImplementation 'org.assertj:assertj-core:3.24.2'
 }
-
 
 tasks.named('jar') {
     manifest {
