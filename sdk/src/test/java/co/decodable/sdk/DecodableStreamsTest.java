@@ -13,12 +13,9 @@ import co.decodable.sdk.testing.TestEnvironment;
 import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -83,15 +80,7 @@ public class DecodableStreamsTest {
 
     stream.sinkTo(sink);
 
-    CompletableFuture<Void> handle =
-        CompletableFuture.runAsync(
-            () -> {
-              try {
-                env.execute();
-              } catch (Exception e) {
-                throw new RuntimeException("Job failed", e);
-              }
-            });
+    JobClient client = env.executeAsync();
 
     // 3. assert the processed record on the output stream
     try (var consumer = new KafkaConsumer<String, String>(consumerProperties())) {
@@ -113,11 +102,7 @@ public class DecodableStreamsTest {
     } catch (ConditionTimeoutException e) {
       fail("Expected message not received in time");
     } finally {
-      try {
-        handle.get(0, TimeUnit.SECONDS);
-      } catch (TimeoutException | ExecutionException | InterruptedException e) {
-        handle.cancel(true);
-      }
+      client.cancel();
     }
   }
 
