@@ -9,7 +9,7 @@ package co.decodable.sdk.internal;
 
 import co.decodable.sdk.DecodableStreamSink;
 import co.decodable.sdk.DecodableStreamSinkBuilder;
-import co.decodable.sdk.Environment;
+import co.decodable.sdk.EnvironmentAccess;
 import co.decodable.sdk.internal.config.StreamConfig;
 import co.decodable.sdk.internal.config.StreamConfigMapping;
 import java.util.Map;
@@ -38,7 +38,8 @@ public class DecodableStreamSinkBuilderImpl implements DecodableStreamSinkBuilde
 
   @Override
   public DecodableStreamSink<String> build() {
-    Map<String, String> environment = Environment.getEnvironmentConfiguration();
+    Map<String, String> environment =
+        EnvironmentAccess.getEnvironment().getEnvironmentConfiguration();
 
     StreamConfig streamConfig =
         new StreamConfigMapping(environment).determineConfig(streamName, streamId);

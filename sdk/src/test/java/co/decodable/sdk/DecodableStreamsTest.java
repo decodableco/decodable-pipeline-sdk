@@ -9,9 +9,9 @@ package co.decodable.sdk;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+import co.decodable.sdk.testing.TestEnvironment;
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -37,19 +37,32 @@ import org.testcontainers.redpanda.RedpandaContainer;
 @Testcontainers
 public class DecodableStreamsTest {
 
+  private static final String PURCHASE_ORDERS = "purchase-orders";
+  private static final String PURCHASE_ORDERS_PROCESSED = "purchase-orders-processed";
+
   @Container
   public RedpandaContainer broker =
       new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.2");
 
   @Test
   public void shouldProcessExistingRecordInKafkaTopic() throws Exception {
+    TestEnvironment testEnvironment =
+        TestEnvironment.builder()
+            .withBootstrapServers(broker.getBootstrapServers())
+            .withStreams(PURCHASE_ORDERS, PURCHASE_ORDERS_PROCESSED)
+            .build();
+
+    EnvironmentAccess.setEnvironment(testEnvironment);
+
     // 1. insert a record into the source stream
     try (var producer = new KafkaProducer<String, String>(producerProperties())) {
       String key = "my-key";
       String value = "my-value";
 
       Future<RecordMetadata> sent =
-          producer.send(new ProducerRecord<String, String>("stream-00000000-ec10a844", key, value));
+          producer.send(
+              new ProducerRecord<String, String>(
+                  testEnvironment.topicFor(PURCHASE_ORDERS), key, value));
 
       // wait for record to be ack-ed
       sent.get();
@@ -58,60 +71,11 @@ public class DecodableStreamsTest {
     // 2. set up a Flink job for processing that stream
     final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-    String purchaseOrderConfig =
-        "{\n"
-            + "    \"properties\": {\n"
-            + "        \"value.format\": \"debezium-json\",\n"
-            + "        \"key.format\": \"json\",\n"
-            + "        \"topic\": \"stream-00000000-ec10a844\",\n"
-            + "        \"scan.startup.mode\": \"earliest-offset\",\n"
-            + "        \"key.fields\": \"\\\"order_id\\\"\",\n"
-            + "        \"sink.transactional-id-prefix\": \"tx-account-00000000-PIPELINE-af78c091-1686579235527\",\n"
-            + "        \"sink.delivery-guarantee\": \"exactly-once\",\n"
-            + "        \"properties.bootstrap.servers\": \""
-            + broker.getBootstrapServers()
-            + "\",\n"
-            + "        \"properties.transaction.timeout.ms\": \"900000\",\n"
-            + "        \"properties.isolation.level\": \"read_committed\",\n"
-            + "        \"properties.compression.type\": \"zstd\",\n"
-            + "        \"properties.enable.idempotence\": \"true\"\n"
-            + "    },\n"
-            + "    \"name\": \"purchase-orders\"\n"
-            + "}";
-
-    String purchaseOrderProcessedConfig =
-        "{\n"
-            + "    \"properties\": {\n"
-            + "        \"value.format\": \"debezium-json\",\n"
-            + "        \"key.format\": \"json\",\n"
-            + "        \"topic\": \"stream-00000000-a8da2fca\",\n"
-            + "        \"scan.startup.mode\": \"earliest-offset\",\n"
-            + "        \"key.fields\": \"\\\"order_id\\\"\",\n"
-            + "        \"sink.transactional-id-prefix\": \"tx-account-00000000-PIPELINE-af78c091-1686579235527\",\n"
-            + "        \"sink.delivery-guarantee\": \"exactly-once\",\n"
-            + "        \"properties.bootstrap.servers\": \""
-            + broker.getBootstrapServers()
-            + "\",\n"
-            + "        \"properties.transaction.timeout.ms\": \"900000\",\n"
-            + "        \"properties.isolation.level\": \"read_committed\",\n"
-            + "        \"properties.compression.type\": \"zstd\",\n"
-            + "        \"properties.enable.idempotence\": \"true\"\n"
-            + "    },\n"
-            + "    \"name\": \"purchase-orders-processed\"\n"
-            + "}";
-
-    Environment.setEnvironmentConfiguration(
-        Map.of(
-            "DECODABLE_STREAM_CONFIG_ec10a844",
-            purchaseOrderConfig,
-            "DECODABLE_STREAM_CONFIG_a8da2fca",
-            purchaseOrderProcessedConfig));
-
     DecodableStreamSource<String> source =
-        DecodableStreamSource.builder().withStreamName("purchase-orders").build();
+        DecodableStreamSource.builder().withStreamName(PURCHASE_ORDERS).build();
 
     DecodableStreamSink<String> sink =
-        DecodableStreamSink.builder().withStreamName("purchase-orders-processed").build();
+        DecodableStreamSink.builder().withStreamName(PURCHASE_ORDERS_PROCESSED).build();
 
     DataStream<String> stream =
         env.fromSource(source, WatermarkStrategy.noWatermarks(), "Purchase Orders Source")
@@ -131,7 +95,7 @@ public class DecodableStreamsTest {
 
     // 3. assert the processed record on the output stream
     try (var consumer = new KafkaConsumer<String, String>(consumerProperties())) {
-      consumer.subscribe(List.of("stream-00000000-a8da2fca"));
+      consumer.subscribe(List.of(testEnvironment.topicFor(PURCHASE_ORDERS_PROCESSED)));
 
       Awaitility.await()
           .atMost(Duration.ofSeconds(10L))

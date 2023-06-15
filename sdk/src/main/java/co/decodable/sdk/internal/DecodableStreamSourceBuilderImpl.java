@@ -9,7 +9,7 @@ package co.decodable.sdk.internal;
 
 import co.decodable.sdk.DecodableStreamSource;
 import co.decodable.sdk.DecodableStreamSourceBuilder;
-import co.decodable.sdk.Environment;
+import co.decodable.sdk.EnvironmentAccess;
 import co.decodable.sdk.StartupMode;
 import co.decodable.sdk.internal.config.StreamConfig;
 import co.decodable.sdk.internal.config.StreamConfigMapping;
@@ -21,8 +21,6 @@ import org.apache.flink.connector.kafka.source.KafkaSourceBuilder;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 
 public class DecodableStreamSourceBuilderImpl implements DecodableStreamSourceBuilder {
-
-  private static final String BROKERS_ENV_VAR = "DECODABLE_KAFKA_BROKERS";
 
   private String streamId;
   private String streamName;
@@ -48,7 +46,8 @@ public class DecodableStreamSourceBuilderImpl implements DecodableStreamSourceBu
 
   @Override
   public DecodableStreamSource<String> build() {
-    Map<String, String> environment = Environment.getEnvironmentConfiguration();
+    Map<String, String> environment =
+        EnvironmentAccess.getEnvironment().getEnvironmentConfiguration();
 
     StreamConfig streamConfig =
         new StreamConfigMapping(environment).determineConfig(streamName, streamId);
