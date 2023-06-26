@@ -10,6 +10,13 @@ and running them on Decodable as a [custom pipeline](https://docs.decodable.co/d
 * _sdk_: The Decodable SDK
 * _examples_: Examples for using the SDK
 
+## Requirements
+
+The following components are required in order to build and use this SDK:
+
+* Java 11 (note that Java 17 is not supported by Apache Flink yet)
+* Docker (for integration tests)
+
 ## Installation
 
 The SDK is not available via Maven Central yet. For the time being, build and install it into your local Maven repository yourself, as described under [Building the SDK](#building-the-sdk).
