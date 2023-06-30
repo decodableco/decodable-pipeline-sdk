@@ -10,10 +10,10 @@ plugins {
     id 'eclipse'
     id 'com.diffplug.spotless' version '6.8.0'
     id 'maven-publish'
+    id 'org.jreleaser' version '1.7.0'
 }
 
 group = 'co.decodable'
-version = '1.0.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -27,7 +27,7 @@ dependencies {
     implementation "org.apache.flink:flink-streaming-java:$flinkVersion"
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 
-    testImplementation 'org.apache.flink:flink-clients:1.16.1'
+    testImplementation "org.apache.flink:flink-clients:$flinkVersion"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
     testImplementation 'org.testcontainers:redpanda:1.18.3'
     testImplementation 'org.testcontainers:junit-jupiter:1.18.3'
@@ -51,6 +51,8 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(11)
     }
+    withJavadocJar()
+    withSourcesJar()
 }
 
 spotless {
@@ -72,6 +74,30 @@ publishing {
         maven(MavenPublication) {
             from components.java
 
+            pom {
+                name = 'Decodable Pipeline SDK'
+                description = 'A software development kit for implementing Apache Flink jobs and running them on Decodable'
+                url = 'https://github.com/decodableco/decodable-pipeline-sdk'
+                inceptionYear = '2023'
+                licenses {
+                    license {
+                        name = 'Apache-2.0'
+                        url = 'https://spdx.org/licenses/Apache-2.0.html'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'gunnarmorling'
+                        name = 'Gunnar Morling'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/decodableco/decodable-pipeline-sdk.git'
+                    developerConnection = 'scm:git:ssh://github.com/decodableco/decodable-pipeline-sdk.git'
+                    url = 'https://github.com/decodableco/decodable-pipeline-sdk'
+                }
+            }
+
             pom.withXml {
                 asNode().dependencies.'*'.each() {
                     if (it.artifactId.text() == 'flink-core' || it.artifactId.text() == 'flink-streaming-java') {
@@ -80,6 +106,34 @@ publishing {
                     else if (it.artifactId.text() == 'flink-connector-kafka') {
                         it.scope*.value = 'compile'
                     }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
+    }
+}
+
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    gitRootSearch = true
+    deploy {
+        maven {
+            nexus2 {
+                'maven-central' {
+                    active = 'ALWAYS'
+                    url = 'https://s01.oss.sonatype.org/service/local'
+                    snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots'
+                    closeRepository = false
+                    releaseRepository = false
+                    stagingRepository('build/staging-deploy')
                 }
             }
         }
