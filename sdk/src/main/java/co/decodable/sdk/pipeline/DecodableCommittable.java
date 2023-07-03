@@ -9,5 +9,6 @@ package co.decodable.sdk.pipeline;
 
 import co.decodable.sdk.pipeline.util.Incubating;
 
+/** A committable used with {@link DecodableStreamSink}. */
 @Incubating
 public interface DecodableCommittable {}

@@ -9,5 +9,6 @@ package co.decodable.sdk.pipeline;
 
 import co.decodable.sdk.pipeline.util.Incubating;
 
+/** Enumerator state used with {@link DecodableStreamSource}. */
 @Incubating
 public interface DecodableSourceEnumeratorState {}

@@ -11,6 +11,11 @@ import co.decodable.sdk.pipeline.util.Incubating;
 import org.apache.flink.api.connector.sink2.StatefulSink;
 import org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink;
 
+/**
+ * Sink writer used by {@link DecodableStreamSink}.
+ *
+ * @param <T> Data type of the writer
+ */
 @Incubating
 public interface DecodableWriter<T>
     extends StatefulSink.StatefulSinkWriter<T, DecodableWriterState>,

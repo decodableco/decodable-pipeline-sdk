@@ -18,7 +18,6 @@ on:
         required: false
 
 env:
-  JAVA_VERSION: '11'
   JAVA_DISTRO: 'temurin'
 
 jobs:
@@ -32,8 +31,10 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRO }}
+          java-version: |
+             11
+             20
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2.4.2
@@ -82,6 +83,17 @@ jobs:
           JRELEASER_BRANCH: ${{ env.RELEASE_BRANCH }}
         run: |
           cd sdk && ./gradlew jreleaserConfig jreleaserFullRelease
+
+      - name: Prepare API Docs Publication
+        run: |
+          mkdir -p sdk/build/docs/decodable-pipeline-sdk/api-docs
+          mv sdk/build/docs/javadoc sdk/build/docs/decodable-pipeline-sdk/api-docs/current
+
+      - name: Publish API Docs
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./sdk/build/docs/decodable-pipeline-sdk
 
       - name: JReleaser output
         if: always()

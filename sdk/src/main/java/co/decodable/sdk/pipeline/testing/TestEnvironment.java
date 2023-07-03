@@ -23,17 +23,23 @@ import java.util.stream.Collectors;
  */
 public class TestEnvironment implements Environment {
 
+  /** A builder for creating new {@link TestEnvironment} instances. */
   public static class Builder {
 
     private String bootstrapServers;
     private final Map<String, StreamConfiguration> streams = new HashMap<>();
 
+    /** Specifies the bootstrap server(s) to be used. */
     public Builder withBootstrapServers(String bootstrapServers) {
       Objects.requireNonNull(bootstrapServers, "Bootstrap servers must be specified");
       this.bootstrapServers = bootstrapServers;
       return this;
     }
 
+    /**
+     * Specifies the names of the stream(s) which should be available via this test environment. At
+     * least one stream name must be given.
+     */
     public Builder withStreams(String firstStream, String... furtherStreams) {
       Objects.requireNonNull(firstStream, "At least one stream name must be specified");
       streams.put(firstStream, new StreamConfiguration(firstStream));
@@ -47,6 +53,7 @@ public class TestEnvironment implements Environment {
       return this;
     }
 
+    /** Returns a new {@link TestEnvironment} for the given configuration. */
     public TestEnvironment build() {
       return new TestEnvironment(bootstrapServers, streams);
     }
@@ -73,15 +80,17 @@ public class TestEnvironment implements Environment {
   @Unmodifiable private final Map<String, StreamConfiguration> streams;
   private final String bootstrapServers;
 
-  public TestEnvironment(String bootstrapServers, Map<String, StreamConfiguration> streams) {
+  private TestEnvironment(String bootstrapServers, Map<String, StreamConfiguration> streams) {
     this.bootstrapServers = bootstrapServers;
     this.streams = Collections.unmodifiableMap(streams);
   }
 
+  /** Returns a builder for creating a new {@link TestEnvironment}. */
   public static Builder builder() {
     return new Builder();
   }
 
+  /** {@inheritDoc} */
   @Override
   public Map<String, String> getEnvironmentConfiguration() {
     return streams.entrySet().stream()
@@ -96,6 +105,7 @@ public class TestEnvironment implements Environment {
                         e.getValue().name())));
   }
 
+  /** Returns the name of the Kafka topic backing the given stream. */
   public String topicFor(String streamName) {
     StreamConfiguration config = streams.get(streamName);
 

@@ -10,5 +10,6 @@ package co.decodable.sdk.pipeline;
 import co.decodable.sdk.pipeline.util.Incubating;
 import org.apache.flink.api.connector.source.SourceSplit;
 
+/** A source split used with {@link DecodableStreamSource}. */
 @Incubating
 public interface DecodableSourceSplit extends SourceSplit {}
