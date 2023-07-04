@@ -9,12 +9,15 @@ package co.decodable.sdk.pipeline.snippets;
 
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
-public class DataStreamJob {
+public class PurchaseOrderProcessingJob {
 
   // spotless:off
   public static void main(String[] args) throws Exception { // @start region="custom-pipeline"
@@ -42,10 +45,18 @@ public class DataStreamJob {
   public static class PurchaseOrderProcessor extends RichMapFunction<String, String> {
 
     private static final long serialVersionUID = 1L;
+    private transient ObjectMapper mapper;
+
+    @Override
+    public void open(Configuration parameters) throws Exception {
+      mapper = new ObjectMapper();
+    }
 
     @Override
     public String map(String value) throws Exception {
-      return value;
+      ObjectNode purchaseOrder = (ObjectNode) mapper.readTree(value);
+      purchaseOrder.put("customer_name", purchaseOrder.get("customer_name").asText().toUpperCase());
+      return mapper.writeValueAsString(purchaseOrder);
     }
   }
 }

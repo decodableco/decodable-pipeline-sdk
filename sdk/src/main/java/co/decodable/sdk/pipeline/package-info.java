@@ -17,6 +17,7 @@
  * you can retrieve the elements of a stream, apply a custom mapping function to them, and write
  * them back to another stream using a Flink job like this:
  *
- * <p>{@snippet class="co.decodable.sdk.pipeline.snippets.DataStreamJob" region="custom-pipeline"}
+ * <p>{@snippet class="co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob"
+ * region="custom-pipeline"}
  */
 package co.decodable.sdk.pipeline;
