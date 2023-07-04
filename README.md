@@ -12,22 +12,22 @@ and running them on Decodable as a [custom pipeline](https://docs.decodable.co/d
 
 ## Requirements
 
-The following components are required in order to build and use this SDK:
+The following components are required in order to use this SDK:
 
 * Java 11 (note that Java 17 is not supported by Apache Flink yet)
 * Docker (for integration tests)
 
 ## Installation
 
-The SDK is not available via Maven Central yet. For the time being, build and install it into your local Maven repository yourself, as described under [Building the SDK](#building-the-sdk).
-Then add the SDK dependency to the _pom.xml_ of your Maven project:
+The SDK is available on Maven Central.
+Add the SDK dependency to the _pom.xml_ of your Maven project:
 
 ```xml
 ...
 <dependency>
-	<groupId>co.decodable</groupId>
-	<artifactId>decodable-pipeline-sdk</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+  <groupId>co.decodable</groupId>
+  <artifactId>decodable-pipeline-sdk</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ...
 ```
@@ -45,9 +45,17 @@ implementation 'co.decodable:decodable-pipeline-sdk:1.0.0-SNAPSHOT'
 See the project under _examples/apache-maven/custom-pipelines-hello-world/_ for a complete example project
 which shows how to use the Decodable SDK for implementing and testing Flink jobs to be executed as custom pipelines on Decodable.
 
+Refer to the [API documentation](https://decodableco.github.io/decodable-pipeline-sdk/api-docs/current/index.html) to learn how to use this SDK for implement your custom Flink jobs.
+
 Refer to the [documentation](https://docs.decodable.co/docs/create-pipelines-using-your-own-apache-flink-jobs) for instructions on how to deploy your job as a custom pipeline on the Decodable platform.
 
-## Building the SDK
+## Contributing
+
+We look forward to any contributions to this SDK.
+The project uses [GitHub Issues](https://github.com/decodableco/decodable-pipeline-sdk/issues) for tracking feature requests and bug reports.
+Before picking up any larger work items, it is recommended to reach out via the [Decodable Community](decodablecommunity.slack.com) Slack space.
+
+### Building the SDK
 
 Gradle is used for building the SDK.
 
@@ -57,11 +65,51 @@ Change to the _sdk_ directory and run the following to produce the SDK binary:
 ./gradlew build
 ```
 
+Run the following to apply the auto-formatter to the source code:
+
+```bash
+./gradlew spotlessApply
+```
+
 Run the following to install the SDK JAR into your local Maven repository:
 
 ```bash
 ./gradlew publishToMavenLocal
 ```
+
+### Commit Conventions
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for its commit messages,
+which serve as the input for generated release notes.
+Each commit message must be in the following two forms:
+
+```
+#<issue key> <type>: <description>
+
+Example:
+
+#42 feat: Providing support for the Flink Table API
+```
+
+Optionally, a message body may be specified too:
+
+```
+#42 feat: Providing support for the Flink Table API
+
+Streams can be accessed using Flink SQL now, also ...
+```
+
+### Release Process
+
+This project runs a fully automated release process on GitHub Actions.
+You must be a committer to this repository in order to perform a release.
+To trigger the release of a new SDK version, execute the [release](https://github.com/decodableco/decodable-pipeline-sdk/actions/workflows/release.yml) workflow, specifying the version to be released (e.g. `1.1.0.Final`) and the next version for main (e.g. `1.2.0-SNAPSHOT`).
+The release pipeline performs the following steps:
+
+* Updating versions in the SDK and example project
+* Deploying the SDK artifact to Maven Central
+* Publishing the API documentation
+* Creating a release on GitHub, including a changelog
 
 ## License
 
