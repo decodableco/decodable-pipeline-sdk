@@ -9,6 +9,7 @@ package co.decodable.examples.cpdemo;
 
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -25,13 +26,15 @@ public class DataStreamJob {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 		DecodableStreamSource<String> source =
-				DecodableStreamSource.builder()
+				DecodableStreamSource.<String>builder()
 					.withStreamName("purchase-orders")
+					.withDeserializationSchema(new SimpleStringSchema())
 					.build();
 
 		DecodableStreamSink<String> sink =
-			DecodableStreamSink.builder()
+			DecodableStreamSink.<String>builder()
 				.withStreamName("purchase-orders-processed")
+				.withSerializationSchema(new SimpleStringSchema())
 				.build();
 
 		DataStream<String> stream =

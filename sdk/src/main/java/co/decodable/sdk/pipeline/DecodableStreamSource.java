@@ -24,7 +24,7 @@ public interface DecodableStreamSource<T>
         ResultTypeQueryable<T> {
 
   /** Returns a builder for creating a new {@link DecodableStreamSource}. */
-  public static DecodableStreamSourceBuilder builder() {
-    return new DecodableStreamSourceBuilderImpl();
+  public static <T> DecodableStreamSourceBuilder<T> builder() {
+    return new DecodableStreamSourceBuilderImpl<T>();
   }
 }

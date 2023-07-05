@@ -14,50 +14,61 @@ import co.decodable.sdk.pipeline.StartupMode;
 import co.decodable.sdk.pipeline.internal.config.StreamConfig;
 import co.decodable.sdk.pipeline.internal.config.StreamConfigMapping;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
-import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.KafkaSourceBuilder;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 
-public class DecodableStreamSourceBuilderImpl implements DecodableStreamSourceBuilder {
+public class DecodableStreamSourceBuilderImpl<T> implements DecodableStreamSourceBuilder<T> {
 
   private String streamId;
   private String streamName;
   private StartupMode startupMode;
+  private DeserializationSchema<T> deserializationSchema;
 
   @Override
-  public DecodableStreamSourceBuilder withStreamName(String streamName) {
+  public DecodableStreamSourceBuilder<T> withStreamName(String streamName) {
     this.streamName = streamName;
     return this;
   }
 
   @Override
-  public DecodableStreamSourceBuilder withStreamId(String streamId) {
+  public DecodableStreamSourceBuilder<T> withStreamId(String streamId) {
     this.streamId = streamId;
     return this;
   }
 
   @Override
-  public DecodableStreamSourceBuilder withStartupMode(StartupMode startupMode) {
+  public DecodableStreamSourceBuilder<T> withStartupMode(StartupMode startupMode) {
     this.startupMode = startupMode;
     return this;
   }
 
   @Override
-  public DecodableStreamSource<String> build() {
+  public DecodableStreamSourceBuilder<T> withDeserializationSchema(
+      DeserializationSchema<T> deserializationSchema) {
+    this.deserializationSchema = deserializationSchema;
+    return this;
+  }
+
+  @Override
+  public DecodableStreamSource<T> build() {
+    Objects.requireNonNull(deserializationSchema, "deserializationSchema");
+
     Map<String, String> environment =
         EnvironmentAccess.getEnvironment().getEnvironmentConfiguration();
 
     StreamConfig streamConfig =
         new StreamConfigMapping(environment).determineConfig(streamName, streamId);
 
-    KafkaSourceBuilder<String> builder =
-        KafkaSource.<String>builder()
+    KafkaSourceBuilder<T> builder =
+        KafkaSource.<T>builder()
             .setBootstrapServers(streamConfig.bootstrapServers())
             .setTopics(streamConfig.topic())
             .setProperties(toProperties(streamConfig.kafkaProperties()))
-            .setValueOnlyDeserializer(new SimpleStringSchema());
+            .setValueOnlyDeserializer(deserializationSchema);
 
     if (streamConfig.startupMode() != null) {
       builder.setStartingOffsets(toOffsetsInitializer(streamConfig.startupMode()));
@@ -65,9 +76,9 @@ public class DecodableStreamSourceBuilderImpl implements DecodableStreamSourceBu
       builder.setStartingOffsets(toOffsetsInitializer(startupMode));
     }
 
-    KafkaSource<String> delegate = builder.build();
+    KafkaSource<T> delegate = builder.build();
 
-    return new DecodableStreamSourceImpl<String>(delegate);
+    return new DecodableStreamSourceImpl<T>(delegate);
   }
 
   private static Properties toProperties(Map<String, String> map) {

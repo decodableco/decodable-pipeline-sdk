@@ -9,11 +9,11 @@ package co.decodable.sdk.pipeline.snippets;
 
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import co.decodable.sdk.pipeline.PurchaseOrder;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
-import org.apache.flink.configuration.Configuration;
+import org.apache.flink.formats.json.JsonDeserializationSchema;
+import org.apache.flink.formats.json.JsonSerializationSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
@@ -24,16 +24,18 @@ public class PurchaseOrderProcessingJob {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
     // @highlight region regex=".*"
-    DecodableStreamSource<String> source = DecodableStreamSource.builder()
+    DecodableStreamSource<PurchaseOrder> source = DecodableStreamSource.<PurchaseOrder>builder()
         .withStreamName("purchase-orders")
+        .withDeserializationSchema(new JsonDeserializationSchema<>(PurchaseOrder.class))
         .build();
 
-    DecodableStreamSink<String> sink = DecodableStreamSink.builder()
+    DecodableStreamSink<PurchaseOrder> sink = DecodableStreamSink.<PurchaseOrder>builder()
         .withStreamName("purchase-orders-processed")
+        .withSerializationSchema(new JsonSerializationSchema<>())
         .build();
     // @end
 
-    DataStream<String> stream = env.fromSource(source, WatermarkStrategy.noWatermarks(), "Purchase Orders Source")
+    DataStream<PurchaseOrder> stream = env.fromSource(source, WatermarkStrategy.noWatermarks(), "Purchase Orders Source")
         .map(new PurchaseOrderProcessor());
 
     stream.sinkTo(sink);
@@ -42,21 +44,14 @@ public class PurchaseOrderProcessingJob {
   } // @end region="custom-pipeline"
   //spotless:on
 
-  public static class PurchaseOrderProcessor extends RichMapFunction<String, String> {
+  public static class PurchaseOrderProcessor extends RichMapFunction<PurchaseOrder, PurchaseOrder> {
 
     private static final long serialVersionUID = 1L;
-    private transient ObjectMapper mapper;
 
     @Override
-    public void open(Configuration parameters) throws Exception {
-      mapper = new ObjectMapper();
-    }
-
-    @Override
-    public String map(String value) throws Exception {
-      ObjectNode purchaseOrder = (ObjectNode) mapper.readTree(value);
-      purchaseOrder.put("customer_name", purchaseOrder.get("customer_name").asText().toUpperCase());
-      return mapper.writeValueAsString(purchaseOrder);
+    public PurchaseOrder map(PurchaseOrder purchaseOrder) throws Exception {
+      purchaseOrder.customerName = purchaseOrder.customerName.toUpperCase();
+      return purchaseOrder;
     }
   }
 }
