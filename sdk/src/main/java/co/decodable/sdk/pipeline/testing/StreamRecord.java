@@ -7,11 +7,14 @@
  */
 package co.decodable.sdk.pipeline.testing;
 
+import co.decodable.sdk.pipeline.util.Incubating;
+
 /**
  * Represents one element on a Decodable stream.
  *
  * @param <T> The data type of this record
  */
+@Incubating
 public class StreamRecord<T> {
 
   private final T value;

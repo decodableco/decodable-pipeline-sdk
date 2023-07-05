@@ -7,6 +7,7 @@
  */
 package co.decodable.sdk.pipeline.testing;
 
+import co.decodable.sdk.pipeline.util.Incubating;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -15,6 +16,7 @@ import java.util.concurrent.Future;
  *
  * @param <T> The element type of this stream
  */
+@Incubating
 public interface DecodableStream<T> {
 
   /** Adds the given stream record to this stream. */

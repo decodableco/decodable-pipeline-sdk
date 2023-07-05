@@ -8,6 +8,8 @@
 package co.decodable.sdk.pipeline.testing;
 
 import co.decodable.sdk.pipeline.EnvironmentAccess;
+import co.decodable.sdk.pipeline.util.Incubating;
+import java.lang.System.Logger.Level;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +36,10 @@ import org.apache.kafka.clients.producer.RecordMetadata;
  * Provides access to Decodable streams during testing as well as the ability to run custom Flink
  * jobs.
  */
+@Incubating
 public class PipelineTestContext implements AutoCloseable {
+
+  private static final System.Logger LOGGER = System.getLogger(PipelineTestContext.class.getName());
 
   private final TestEnvironment testEnvironment;
   private final KafkaProducer<String, String> producer;
@@ -88,7 +93,7 @@ public class PipelineTestContext implements AutoCloseable {
           try {
             jobMainMethod.accept(args);
           } catch (Exception e) {
-            throw new RuntimeException("Job failed", e);
+            LOGGER.log(Level.ERROR, "Job failed", e);
           }
         });
   }
