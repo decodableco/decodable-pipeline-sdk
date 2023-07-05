@@ -13,46 +13,57 @@ import co.decodable.sdk.pipeline.EnvironmentAccess;
 import co.decodable.sdk.pipeline.internal.config.StreamConfig;
 import co.decodable.sdk.pipeline.internal.config.StreamConfigMapping;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
-import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
 
-public class DecodableStreamSinkBuilderImpl implements DecodableStreamSinkBuilder {
+public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBuilder<T> {
 
   private String streamId;
   private String streamName;
+  private SerializationSchema<T> serializationSchema;
 
   @Override
-  public DecodableStreamSinkBuilder withStreamName(String streamName) {
+  public DecodableStreamSinkBuilder<T> withStreamName(String streamName) {
     this.streamName = streamName;
     return this;
   }
 
   @Override
-  public DecodableStreamSinkBuilder withStreamId(String streamId) {
+  public DecodableStreamSinkBuilder<T> withStreamId(String streamId) {
     this.streamId = streamId;
     return this;
   }
 
   @Override
-  public DecodableStreamSink<String> build() {
+  public DecodableStreamSinkBuilder<T> withSerializationSchema(
+      SerializationSchema<T> serializationSchema) {
+    this.serializationSchema = serializationSchema;
+    return this;
+  }
+
+  @Override
+  public DecodableStreamSink<T> build() {
+    Objects.requireNonNull(serializationSchema, "serializationSchema");
+
     Map<String, String> environment =
         EnvironmentAccess.getEnvironment().getEnvironmentConfiguration();
 
     StreamConfig streamConfig =
         new StreamConfigMapping(environment).determineConfig(streamName, streamId);
 
-    KafkaSink<String> delegate =
-        KafkaSink.<String>builder()
+    KafkaSink<T> delegate =
+        KafkaSink.<T>builder()
             .setBootstrapServers(streamConfig.bootstrapServers())
             .setRecordSerializer(
                 KafkaRecordSerializationSchema.builder()
                     .setTopic(streamConfig.topic())
-                    .setValueSerializationSchema(new SimpleStringSchema())
+                    .setValueSerializationSchema(serializationSchema)
                     .build())
-            .setDeliverGuarantee(
+            .setDeliveryGuarantee(
                 "exactly-once".equals(streamConfig.deliveryGuarantee())
                     ? DeliveryGuarantee.EXACTLY_ONCE
                     : "at-least-once".equals(streamConfig.deliveryGuarantee())
@@ -62,7 +73,7 @@ public class DecodableStreamSinkBuilderImpl implements DecodableStreamSinkBuilde
             .setKafkaProducerConfig(toProperties(streamConfig.kafkaProperties()))
             .build();
 
-    return new DecodableStreamSinkImpl<String>(delegate);
+    return new DecodableStreamSinkImpl<T>(delegate);
   }
 
   private static Properties toProperties(Map<String, String> map) {

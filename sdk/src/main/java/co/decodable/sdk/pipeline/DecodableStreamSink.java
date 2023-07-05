@@ -24,8 +24,8 @@ public interface DecodableStreamSink<T>
     extends StatefulSink<T, DecodableWriterState>, TwoPhaseCommittingSink<T, DecodableCommittable> {
 
   /** Returns a builder for creating a new {@link DecodableStreamSink}. */
-  public static DecodableStreamSinkBuilder builder() {
-    return new DecodableStreamSinkBuilderImpl();
+  public static <T> DecodableStreamSinkBuilder<T> builder() {
+    return new DecodableStreamSinkBuilderImpl<T>();
   }
 
   /** {@inheritDoc} */

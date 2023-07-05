@@ -28,6 +28,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 
     testImplementation "org.apache.flink:flink-clients:$flinkVersion"
+    testImplementation "org.apache.flink:flink-json:$flinkVersion"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
     testImplementation 'org.testcontainers:redpanda:1.18.3'
     testImplementation 'org.testcontainers:junit-jupiter:1.18.3'
