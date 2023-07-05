@@ -8,6 +8,7 @@
 package co.decodable.sdk.pipeline.testing;
 
 import co.decodable.sdk.pipeline.EnvironmentAccess.Environment;
+import co.decodable.sdk.pipeline.util.Incubating;
 import co.decodable.sdk.pipeline.util.Unmodifiable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
  * An {@link Environment} implementation for testing purposes, allowing to define one or more
  * Decodable streams which then can be accessed from the job under test.
  */
+@Incubating
 public class TestEnvironment implements Environment {
 
   /** A builder for creating new {@link TestEnvironment} instances. */
