@@ -18,5 +18,5 @@ import org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink;
  */
 @Incubating
 public interface DecodableWriter<T>
-    extends StatefulSink.StatefulSinkWriter<T, DecodableWriterState>,
-        TwoPhaseCommittingSink.PrecommittingSinkWriter<T, DecodableCommittable> {}
+    extends StatefulSink.StatefulSinkWriter<T, Object>,
+        TwoPhaseCommittingSink.PrecommittingSinkWriter<T, Object> {}

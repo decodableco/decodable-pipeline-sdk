@@ -7,14 +7,10 @@
  */
 package co.decodable.sdk.pipeline.internal;
 
-import co.decodable.sdk.pipeline.DecodableCommittable;
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableWriter;
-import co.decodable.sdk.pipeline.DecodableWriterState;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.flink.api.connector.sink2.Committer;
 import org.apache.flink.api.connector.sink2.StatefulSink;
 import org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink;
@@ -39,30 +35,24 @@ public class DecodableStreamSinkImpl<T> implements DecodableStreamSink<T> {
   }
 
   @Override
-  public StatefulSinkWriter<T, DecodableWriterState> restoreWriter(
-      InitContext context, Collection<DecodableWriterState> recoveredState) throws IOException {
+  public StatefulSinkWriter<T, Object> restoreWriter(
+      InitContext context, Collection<Object> recoveredState) throws IOException {
 
-    List<Object> kafkaState =
-        recoveredState.stream()
-            .map(s -> ((DecodableWriterStateImpl) s).getDelegate())
-            .collect(Collectors.toList());
-
-    return delegate.restoreWriter(context, kafkaState);
+    return delegate.restoreWriter(context, recoveredState);
   }
 
   @Override
-  public SimpleVersionedSerializer<DecodableWriterState> getWriterStateSerializer() {
-    return new DelegatingWriterStateSerializer(delegate.getWriterStateSerializer());
+  public SimpleVersionedSerializer<Object> getWriterStateSerializer() {
+    return delegate.getWriterStateSerializer();
   }
 
   @Override
-  public Committer<DecodableCommittable> createCommitter() throws IOException {
-    return new DelegatingCommitter(((TwoPhaseCommittingSink) delegate).createCommitter());
+  public Committer<Object> createCommitter() throws IOException {
+    return ((TwoPhaseCommittingSink) delegate).createCommitter();
   }
 
   @Override
-  public SimpleVersionedSerializer<DecodableCommittable> getCommittableSerializer() {
-    return new DelegatingCommittableSerializer(
-        ((TwoPhaseCommittingSink) delegate).getCommittableSerializer());
+  public SimpleVersionedSerializer<Object> getCommittableSerializer() {
+    return ((TwoPhaseCommittingSink) delegate).getCommittableSerializer();
   }
 }

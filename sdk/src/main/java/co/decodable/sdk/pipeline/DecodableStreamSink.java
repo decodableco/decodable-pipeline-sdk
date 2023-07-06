@@ -21,7 +21,7 @@ import org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink;
  */
 @Incubating
 public interface DecodableStreamSink<T>
-    extends StatefulSink<T, DecodableWriterState>, TwoPhaseCommittingSink<T, DecodableCommittable> {
+    extends StatefulSink<T, Object>, TwoPhaseCommittingSink<T, Object> {
 
   /** Returns a builder for creating a new {@link DecodableStreamSink}. */
   public static <T> DecodableStreamSinkBuilder<T> builder() {

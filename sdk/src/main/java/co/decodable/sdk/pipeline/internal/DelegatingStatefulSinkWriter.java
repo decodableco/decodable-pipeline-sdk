@@ -7,13 +7,10 @@
  */
 package co.decodable.sdk.pipeline.internal;
 
-import co.decodable.sdk.pipeline.DecodableCommittable;
 import co.decodable.sdk.pipeline.DecodableWriter;
-import co.decodable.sdk.pipeline.DecodableWriterState;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.flink.api.connector.sink2.StatefulSink.StatefulSinkWriter;
 import org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink;
 
@@ -21,7 +18,7 @@ import org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink;
 public class DelegatingStatefulSinkWriter<T> implements DecodableWriter<T> {
 
   // Can't use the Kafka sink's implementation, as it exposes non-public types in its signatures
-  private final StatefulSinkWriter<T, ?> delegate;
+  private final StatefulSinkWriter delegate;
 
   public DelegatingStatefulSinkWriter(StatefulSinkWriter<T, ?> delegate) {
     this.delegate = delegate;
@@ -43,17 +40,12 @@ public class DelegatingStatefulSinkWriter<T> implements DecodableWriter<T> {
   }
 
   @Override
-  public List<DecodableWriterState> snapshotState(long checkpointId) throws IOException {
-    return delegate.snapshotState(checkpointId).stream()
-        .map(DecodableWriterStateImpl::new)
-        .collect(Collectors.toList());
+  public List<Object> snapshotState(long checkpointId) throws IOException {
+    return delegate.snapshotState(checkpointId);
   }
 
   @Override
-  public Collection<DecodableCommittable> prepareCommit() throws IOException, InterruptedException {
-    Collection<?> commitables =
-        ((TwoPhaseCommittingSink.PrecommittingSinkWriter<T, ?>) delegate).prepareCommit();
-
-    return commitables.stream().map(DecodableCommittableImpl::new).collect(Collectors.toList());
+  public Collection<Object> prepareCommit() throws IOException, InterruptedException {
+    return ((TwoPhaseCommittingSink.PrecommittingSinkWriter) delegate).prepareCommit();
   }
 }
