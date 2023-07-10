@@ -92,11 +92,11 @@ loadScripts(document, 'script');</script>
 </dl>
 <dl class="notes">
 <dt>All Superinterfaces:</dt>
-<dd><code><a href="https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a></code>, <code>org.apache.flink.api.connector.sink2.Sink&lt;T&gt;</code>, <code>org.apache.flink.api.connector.sink2.StatefulSink&lt;T,<wbr><a href="DecodableWriterState.html" title="interface in co.decodable.sdk.pipeline">DecodableWriterState</a>&gt;</code>, <code>org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink&lt;T,<wbr><a href="DecodableCommittable.html" title="interface in co.decodable.sdk.pipeline">DecodableCommittable</a>&gt;</code></dd>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a></code>, <code>org.apache.flink.api.connector.sink2.Sink&lt;T&gt;</code>, <code>org.apache.flink.api.connector.sink2.StatefulSink&lt;T,<wbr><a href="https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</code>, <code>org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink&lt;T,<wbr><a href="https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</code></dd>
 </dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">DecodableStreamSink&lt;T&gt;</span><span class="extends-implements">
-extends org.apache.flink.api.connector.sink2.StatefulSink&lt;T,<wbr><a href="DecodableWriterState.html" title="interface in co.decodable.sdk.pipeline">DecodableWriterState</a>&gt;, org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink&lt;T,<wbr><a href="DecodableCommittable.html" title="interface in co.decodable.sdk.pipeline">DecodableCommittable</a>&gt;</span></div>
+extends org.apache.flink.api.connector.sink2.StatefulSink&lt;T,<wbr><a href="https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;, org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink&lt;T,<wbr><a href="https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</span></div>
 <div class="block">A <code>StatefulSink</code> which allows to write to a <a href="https://docs.decodable.co/docs/streams">Decodable stream</a> from within a Flink job.</div>
 </section>
 <section class="summary">
@@ -171,9 +171,9 @@ extends org.apache.flink.api.connector.sink2.StatefulSink&lt;T,<wbr><a href="Dec
 <dt>Specified by:</dt>
 <dd><code>createWriter</code>&nbsp;in interface&nbsp;<code>org.apache.flink.api.connector.sink2.Sink&lt;<a href="DecodableStreamSink.html" title="type parameter in DecodableStreamSink">T</a>&gt;</code></dd>
 <dt>Specified by:</dt>
-<dd><code>createWriter</code>&nbsp;in interface&nbsp;<code>org.apache.flink.api.connector.sink2.StatefulSink&lt;<a href="DecodableStreamSink.html" title="type parameter in DecodableStreamSink">T</a>,<wbr><a href="DecodableWriterState.html" title="interface in co.decodable.sdk.pipeline">DecodableWriterState</a>&gt;</code></dd>
+<dd><code>createWriter</code>&nbsp;in interface&nbsp;<code>org.apache.flink.api.connector.sink2.StatefulSink&lt;<a href="DecodableStreamSink.html" title="type parameter in DecodableStreamSink">T</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</code></dd>
 <dt>Specified by:</dt>
-<dd><code>createWriter</code>&nbsp;in interface&nbsp;<code>org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink&lt;<a href="DecodableStreamSink.html" title="type parameter in DecodableStreamSink">T</a>,<wbr><a href="DecodableCommittable.html" title="interface in co.decodable.sdk.pipeline">DecodableCommittable</a>&gt;</code></dd>
+<dd><code>createWriter</code>&nbsp;in interface&nbsp;<code>org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink&lt;<a href="DecodableStreamSink.html" title="type parameter in DecodableStreamSink">T</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</code></dd>
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/io/IOException.html" title="class or interface in java.io" class="external-link">IOException</a></code></dd>
 </dl>
