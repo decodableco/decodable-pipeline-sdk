@@ -5,7 +5,7 @@
  *
  * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
  */
-
+// spotless:off
 /**
  * An SDK for implementing Apache Flink jobs and running them on <a
  * href="https://www.decodable.co">Decodable</a>.
@@ -19,5 +19,26 @@
  *
  * <p>{@snippet class="co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob"
  * region="custom-pipeline"}
+ *
+ * <h2>Stream Metadata</h2>
+ *
+ * While not required, it is a good practice for custom pipeline authors to provide metadata about
+ * the source and sink streams accessed by their pipelines. That way, the referenced pipelines can
+ * be displayed in the Decodable user interface. In order to do so, add a file named
+ * <i>META-INF/decodable/stream-names.properties</i> to your Flink job JAR. Within that file,
+ * specify the name(s) of all source and sink streams as comma-separated lists, using the property
+ * keys "source-streams" and "sink-streams":
+ *
+ * <p>
+ * {@snippet :
+   source-streams=my_source_stream_1,my_source_stream_2
+   sink-streams=my_sink_stream_1,my_sink_stream_2
+   }
+ * Instead of manually creating this file, it is recommended to generate it automatically, using an
+ * annotation processor which ships with this SDK. To do so, specify the stream names using the
+ * {@link co.decodable.sdk.pipeline.metadata.SourceStreams} and
+ * {@link co.decodable.sdk.pipeline.metadata.SinkStreams} annotations on the job class, as shown in
+ * the example listing above.
  */
+//spotless:on
 package co.decodable.sdk.pipeline;

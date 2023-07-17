@@ -7,6 +7,9 @@
  */
 package co.decodable.examples.cpdemo;
 
+import static co.decodable.examples.cpdemo.DataStreamJob.PURCHASE_ORDERS_PROCESSED_STREAM;
+import static co.decodable.examples.cpdemo.DataStreamJob.PURCHASE_ORDERS_STREAM;
+
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
@@ -19,21 +22,28 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
+import co.decodable.sdk.pipeline.metadata.SinkStreams;
+import co.decodable.sdk.pipeline.metadata.SourceStreams;
 
+@SourceStreams(PURCHASE_ORDERS_STREAM)
+@SinkStreams(PURCHASE_ORDERS_PROCESSED_STREAM)
 public class DataStreamJob {
+
+	static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
+	static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
 
 	public static void main(String[] args) throws Exception {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 		DecodableStreamSource<String> source =
 				DecodableStreamSource.<String>builder()
-					.withStreamName("purchase-orders")
+					.withStreamName(PURCHASE_ORDERS_STREAM)
 					.withDeserializationSchema(new SimpleStringSchema())
 					.build();
 
 		DecodableStreamSink<String> sink =
 			DecodableStreamSink.<String>builder()
-				.withStreamName("purchase-orders-processed")
+				.withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
 				.withSerializationSchema(new SimpleStringSchema())
 				.build();
 

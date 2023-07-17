@@ -35,6 +35,7 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter:1.18.3'
     testImplementation 'org.slf4j:slf4j-simple:1.7.36'
     testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'com.google.testing.compile:compile-testing:0.21.0'
 }
 
 tasks.named('jar') {
