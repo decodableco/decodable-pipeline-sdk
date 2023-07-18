@@ -7,9 +7,14 @@
  */
 package co.decodable.sdk.pipeline.snippets;
 
+import static co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob.PURCHASE_ORDERS_PROCESSED_STREAM;
+import static co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob.PURCHASE_ORDERS_STREAM;
+
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
 import co.decodable.sdk.pipeline.PurchaseOrder;
+import co.decodable.sdk.pipeline.metadata.SinkStreams;
+import co.decodable.sdk.pipeline.metadata.SourceStreams;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.formats.json.JsonDeserializationSchema;
@@ -17,20 +22,25 @@ import org.apache.flink.formats.json.JsonSerializationSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+// spotless:off
+@SourceStreams(PURCHASE_ORDERS_STREAM) // @start region="custom-pipeline"
+@SinkStreams(PURCHASE_ORDERS_PROCESSED_STREAM)
 public class PurchaseOrderProcessingJob {
 
-  // spotless:off
-  public static void main(String[] args) throws Exception { // @start region="custom-pipeline"
+  static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
+  static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
+
+  public static void main(String[] args) throws Exception {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
     // @highlight region regex=".*"
     DecodableStreamSource<PurchaseOrder> source = DecodableStreamSource.<PurchaseOrder>builder()
-        .withStreamName("purchase-orders")
+        .withStreamName(PURCHASE_ORDERS_STREAM)
         .withDeserializationSchema(new JsonDeserializationSchema<>(PurchaseOrder.class))
         .build();
 
     DecodableStreamSink<PurchaseOrder> sink = DecodableStreamSink.<PurchaseOrder>builder()
-        .withStreamName("purchase-orders-processed")
+        .withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
         .withSerializationSchema(new JsonSerializationSchema<>())
         .build();
     // @end
