@@ -147,8 +147,8 @@ jreleaser {
                     active = 'ALWAYS'
                     url = 'https://s01.oss.sonatype.org/service/local'
                     snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots'
-                    closeRepository = false
-                    releaseRepository = false
+                    closeRepository = true
+                    releaseRepository = true
                     stagingRepository('build/staging-deploy')
                 }
             }
