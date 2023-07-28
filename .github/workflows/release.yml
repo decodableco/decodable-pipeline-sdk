@@ -39,7 +39,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2.4.2
 
-      - name: Set release version
+      - name: Set Release Version
         id: version
         run: |
           BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
@@ -58,6 +58,7 @@ jobs:
           sed -i 's/^_Version\s.*$/_Version '"$RELEASE_VERSION"'_/g' README.md
           sed -i 's/<version>.*<\/version>/<version>'"$RELEASE_VERSION"'<\/version>/g' README.md
           sed -i 's/implementation \x27co\.decodable:decodable-pipeline-sdk:.*\x27/implementation \x27co.decodable:decodable-pipeline-sdk:'"$RELEASE_VERSION"'\x27/g' README.md
+          sed -i 's/<decodable.pipeline.sdk.version>.*<\/decodable.pipeline.sdk.version>/<decodable.pipeline.sdk.version>'"$RELEASE_VERSION"'<\/decodable.pipeline.sdk.version>/g' examples/apache-maven/custom-pipelines-hello-world/pom.xml
 
           git config --global user.email "decodable-release-bot@decodable.co.invalid"
           git config --global user.name "decodable-release-bot"
@@ -69,8 +70,12 @@ jobs:
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
           echo "PLAIN_VERSION=$PLAIN_VERSION" >> $GITHUB_ENV
+
       - name: Build SDK
-        run: cd sdk && ./gradlew build publish
+        run: cd sdk && ./gradlew build publishToMavenLocal publish
+
+      - name: Build Example Project
+        run: cd examples/apache-maven/custom-pipelines-hello-world && ./mvnw -B clean verify
 
       - name: Release SDK
         env:
@@ -95,7 +100,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./sdk/build/docs/decodable-pipeline-sdk
 
-      - name: JReleaser output
+      - name: JReleaser Output
         if: always()
         uses: actions/upload-artifact@v3
         with:
@@ -104,7 +109,7 @@ jobs:
             sdk/build/jreleaser/trace.log
             sdk/build/jreleaser/output.properties
 
-      - name: Set next version
+      - name: Set Next Version
         run: |
           echo "version=$NEXT_VERSION" > sdk/gradle.properties
           git config --global user.email "decodable-release-bot@decodable.co.invalid"
