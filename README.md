@@ -1,6 +1,6 @@
 # Decodable Pipeline SDK
 
-_Version 1.0.0.Beta1_
+_Version 1.0.0.Beta2_
 
 This repository contains a software development kit (SDK) for implementing [Apache Flink](https://flink.apache.org/) jobs
 and running them on Decodable as a [custom pipeline](https://docs.decodable.co/docs/create-pipelines-using-your-own-apache-flink-jobs).
@@ -27,7 +27,7 @@ Add the SDK dependency to the _pom.xml_ of your Maven project:
 <dependency>
   <groupId>co.decodable</groupId>
   <artifactId>decodable-pipeline-sdk</artifactId>
-  <version>1.0.0.Beta1</version>
+  <version>1.0.0.Beta2</version>
 </dependency>
 ...
 ```
@@ -36,7 +36,7 @@ Or, to your _build.gradle_ when using Gradle:
 
 ```
 ...
-implementation 'co.decodable:decodable-pipeline-sdk:1.0.0.Beta1'
+implementation 'co.decodable:decodable-pipeline-sdk:1.0.0.Beta2'
 ...
 ```
 

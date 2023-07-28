@@ -25,7 +25,7 @@
 		<scala.binary.version>2.12</scala.binary.version>
 		<maven.compiler.source>${target.java.version}</maven.compiler.source>
 		<maven.compiler.target>${target.java.version}</maven.compiler.target>
-		<decodable.pipeline.sdk.version>1.0.0-SNAPSHOT</decodable.pipeline.sdk.version>
+		<decodable.pipeline.sdk.version>1.0.0.Beta2</decodable.pipeline.sdk.version>
 		<flink.version>1.16.1</flink.version>
 		<log4j.version>2.17.1</log4j.version>
 	</properties>
