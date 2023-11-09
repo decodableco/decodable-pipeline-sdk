@@ -20,8 +20,8 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import co.decodable.sdk.pipeline.DecodableStreamSink;
-import co.decodable.sdk.pipeline.DecodableStreamSource;
+import co.decodable.sdk.pipeline.DecodableDataStreamSinkBuilder;
+import co.decodable.sdk.pipeline.DecodableDataStreamSourceBuilder;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
 import co.decodable.sdk.pipeline.metadata.SourceStreams;
 
@@ -35,23 +35,20 @@ public class DataStreamJob {
 	public static void main(String[] args) throws Exception {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		DecodableStreamSource<String> source =
-				DecodableStreamSource.<String>builder()
-					.withStreamName(PURCHASE_ORDERS_STREAM)
-					.withDeserializationSchema(new SimpleStringSchema())
-					.build();
+		DataStream<String> stream = new DecodableDataStreamSourceBuilder<String>(
+				env, WatermarkStrategy.noWatermarks()
+		)
+			.withStreamName(PURCHASE_ORDERS_STREAM)
+			.withDeserializationSchema(new SimpleStringSchema())
+			.build()
+				.map(new NameConverter());
 
-		DecodableStreamSink<String> sink =
-			DecodableStreamSink.<String>builder()
+		new DecodableDataStreamSinkBuilder<String>(
+				stream
+		)
 				.withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
 				.withSerializationSchema(new SimpleStringSchema())
 				.build();
-
-		DataStream<String> stream =
-			env.fromSource(source, WatermarkStrategy.noWatermarks(), "Purchase Orders Source")
-				.map(new NameConverter());
-
-		stream.sinkTo(sink);
 
 		env.execute("Purchase Order Processor");
 	}
