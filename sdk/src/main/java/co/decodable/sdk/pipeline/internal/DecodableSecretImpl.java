@@ -15,19 +15,25 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 
 public class DecodableSecretImpl implements DecodableSecret {
-
   private static final String SECRET_DIRECTORY = "/opt/flink/opt/secrets/";
 
   private final String name;
   private final String value;
 
   public DecodableSecretImpl(String name) {
+    this(name, SECRET_DIRECTORY);
+  }
+
+  DecodableSecretImpl(String name, String secretDirectory) {
     this.name = name;
-    var secretFile = new File(SECRET_DIRECTORY + name);
+    if (!secretDirectory.endsWith("/")) {
+      secretDirectory = secretDirectory + "/";
+    }
+    var secretFile = new File(secretDirectory + name);
     if (!secretFile.exists()) {
       throw new SecretNotFoundException(
           String.format(
-              "Secret [%s] not found. Please make sure it is included in this pipeline's properties",
+              "Secret [%s] not found. Please make sure it is included in this pipeline's properties.",
               name));
     }
     try {
