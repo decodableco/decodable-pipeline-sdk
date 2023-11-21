@@ -9,12 +9,14 @@ package co.decodable.sdk.pipeline;
 
 import co.decodable.sdk.pipeline.exception.SecretNotFoundException;
 import co.decodable.sdk.pipeline.internal.DecodableSecretImpl;
+import co.decodable.sdk.pipeline.util.Incubating;
 import java.time.Instant;
 
 /**
  * Represents a <a href="https://docs.decodable.co/docs/manage-secrets">Decodable secret</a>.
  * Exposes both metadata and the secret value.
  */
+@Incubating
 public interface DecodableSecret {
   /** Returns the plaintext secret value. */
   String value();
