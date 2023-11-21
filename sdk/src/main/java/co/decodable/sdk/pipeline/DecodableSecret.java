@@ -14,7 +14,11 @@ import java.time.Instant;
 
 /**
  * Represents a <a href="https://docs.decodable.co/docs/manage-secrets">Decodable secret</a>.
- * Exposes both metadata and the secret value.
+ * Exposes both metadata and the secret value. Create an instance and access its properties like
+ * this:
+ *
+ * <p>{@snippet : var mySecret = DecodableSecret.withName("my-secret"); var mySecretValue =
+ * mySecret.value(); doStuffWithMySecret(mySecretValue); }
  */
 @Incubating
 public interface DecodableSecret {
