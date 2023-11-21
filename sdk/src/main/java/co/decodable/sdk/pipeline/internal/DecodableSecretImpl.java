@@ -14,11 +14,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.time.Instant;
 import org.apache.commons.io.FileUtils;
 
 public class DecodableSecretImpl implements DecodableSecret {
   private static final String SECRET_DIRECTORY = "/opt/flink/opt/secrets/";
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   private final SecretMetadata metadata;
   private final String value;
@@ -41,7 +42,6 @@ public class DecodableSecretImpl implements DecodableSecret {
     }
     try {
       this.value = FileUtils.readFileToString(secretFile, StandardCharsets.UTF_8);
-      var objectMapper = new ObjectMapper();
       this.metadata = objectMapper.readValue(secretMetadataFile, SecretMetadata.class);
     } catch (IOException e) {
       throw new SecretNotFoundException(
@@ -50,35 +50,35 @@ public class DecodableSecretImpl implements DecodableSecret {
   }
 
   @Override
-  public String getValue() {
+  public String value() {
     return value;
   }
 
   @Override
-  public String getName() {
+  public String name() {
     return metadata.name;
   }
 
   @Override
-  public String getDescription() {
+  public String description() {
     return metadata.description;
   }
 
   @Override
-  public Date getCreateTime() {
+  public Instant createTime() {
     return metadata.createTime;
   }
 
   @Override
-  public Date getUpdateTime() {
+  public Instant updateTime() {
     return metadata.updateTime;
   }
 
   private static class SecretMetadata {
     private final String name;
     private final String description;
-    private final Date createTime;
-    private final Date updateTime;
+    private final Instant createTime;
+    private final Instant updateTime;
 
     public SecretMetadata(
         @JsonProperty("name") String name,
@@ -87,8 +87,8 @@ public class DecodableSecretImpl implements DecodableSecret {
         @JsonProperty("update_time") Long updateTime) {
       this.name = name;
       this.description = description;
-      this.createTime = createTime == null ? null : new Date(createTime);
-      this.updateTime = updateTime == null ? null : new Date(updateTime);
+      this.createTime = createTime == null ? null : Instant.ofEpochMilli(createTime);
+      this.updateTime = updateTime == null ? null : Instant.ofEpochMilli(updateTime);
     }
   }
 }

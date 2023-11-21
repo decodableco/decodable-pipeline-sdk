@@ -8,18 +8,18 @@
 package co.decodable.sdk.pipeline;
 
 import co.decodable.sdk.pipeline.internal.DecodableSecretImpl;
-import java.util.Date;
+import java.time.Instant;
 
 public interface DecodableSecret {
-  String getValue();
+  String value();
 
-  String getName();
+  String name();
 
-  String getDescription();
+  String description();
 
-  Date getCreateTime();
+  Instant createTime();
 
-  Date getUpdateTime();
+  Instant updateTime();
 
   static DecodableSecret withName(String name) {
     return new DecodableSecretImpl(name);

@@ -15,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Date;
 import org.junit.jupiter.api.Test;
 
 public class DecodableSecretImplTest {
@@ -26,9 +25,9 @@ public class DecodableSecretImplTest {
     var metadataPath = secretFile.toAbsolutePath() + ".metadata";
     var secretMetadataFile = Files.createFile(Path.of(metadataPath));
     long createEpoch = 1700503745;
-    var createTime = Date.from(Instant.ofEpochMilli(createEpoch));
+    var createTime = Instant.ofEpochMilli(createEpoch);
     long updateEpoch = 1700503746;
-    var updateTime = Date.from(Instant.ofEpochMilli(updateEpoch));
+    var updateTime = Instant.ofEpochMilli(updateEpoch);
     Files.write(secretFile, "my-secret-value".getBytes(StandardCharsets.UTF_8));
     Files.write(
         secretMetadataFile,
@@ -39,11 +38,11 @@ public class DecodableSecretImplTest {
     var secret =
         new DecodableSecretImpl(
             secretFile.getFileName().toString(), secretFile.getParent().toString());
-    assertThat(secret.getValue()).isEqualTo("my-secret-value");
-    assertThat(secret.getName()).startsWith("secret");
-    assertThat(secret.getDescription()).isEqualTo("My secret");
-    assertThat(secret.getCreateTime()).isEqualTo(createTime);
-    assertThat(secret.getUpdateTime()).isEqualTo(updateTime);
+    assertThat(secret.value()).isEqualTo("my-secret-value");
+    assertThat(secret.name()).startsWith("secret");
+    assertThat(secret.description()).isEqualTo("My secret");
+    assertThat(secret.createTime()).isEqualTo(createTime);
+    assertThat(secret.updateTime()).isEqualTo(updateTime);
   }
 
   @Test
