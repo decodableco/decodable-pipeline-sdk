@@ -15,14 +15,19 @@ import java.time.Instant;
 // spotless:off
 /**
  * Represents a <a href="https://docs.decodable.co/docs/manage-secrets">Decodable secret</a>.
- * Exposes both metadata and the secret value. Create an instance and access its properties like
- * this:
+ * Exposes both metadata and the secret value. Can be used to e.g. inject a password to an external system like this:
  *
  * <p>
  * {@snippet :
-   var mySecret = DecodableSecret.withName("my-secret");
-   var mySecretValue = mySecret.value();
-   doStuffWithMySecret(mySecretValue);
+   SourceFunction<String> sourceFunction = SqlServerSource.<String>builder()
+      .hostname("localhost")
+      .port(1433)
+      .database("inventory")
+      .tableList("dbo.items")
+      .username("my-sql-server-user")
+      .password(DecodableSecret.withName("my-sql-server-password").value())
+      .deserializer(new JsonDebeziumDeserializationSchema())
+      .build();
    }
  */
 // spotless:on
