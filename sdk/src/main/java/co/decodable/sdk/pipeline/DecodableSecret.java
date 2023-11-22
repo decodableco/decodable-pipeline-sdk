@@ -21,7 +21,8 @@ import java.time.Instant;
  * <p>
  * {@snippet :
    var mySecret = DecodableSecret.withName("my-secret");
-   var mySecretValue = mySecret.value(); doStuffWithMySecret(mySecretValue);
+   var mySecretValue = mySecret.value();
+   doStuffWithMySecret(mySecretValue);
    }
  */
 // spotless:on
