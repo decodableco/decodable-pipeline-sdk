@@ -12,14 +12,19 @@ import co.decodable.sdk.pipeline.internal.DecodableSecretImpl;
 import co.decodable.sdk.pipeline.util.Incubating;
 import java.time.Instant;
 
+// spotless:off
 /**
  * Represents a <a href="https://docs.decodable.co/docs/manage-secrets">Decodable secret</a>.
  * Exposes both metadata and the secret value. Create an instance and access its properties like
  * this:
  *
- * <p>{@snippet : var mySecret = DecodableSecret.withName("my-secret"); var mySecretValue =
- * mySecret.value(); doStuffWithMySecret(mySecretValue); }
+ * <p>
+ * {@snippet :
+   var mySecret = DecodableSecret.withName("my-secret");
+   var mySecretValue = mySecret.value(); doStuffWithMySecret(mySecretValue);
+   }
  */
+// spotless:on
 @Incubating
 public interface DecodableSecret {
   /** Returns the plaintext secret value. */
