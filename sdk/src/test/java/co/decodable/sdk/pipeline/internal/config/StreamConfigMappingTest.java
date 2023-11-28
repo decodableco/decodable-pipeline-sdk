@@ -40,7 +40,7 @@ public class StreamConfigMappingTest {
 
     StreamConfigMapping streamConfigMapping =
         new StreamConfigMapping(Map.of("DECODABLE_STREAM_CONFIG_078fc8b5", config));
-    StreamConfig streamConfig = streamConfigMapping.determineConfig(null, "078fc8b5");
+    StreamConfig streamConfig = streamConfigMapping.determineConfig("shipments");
 
     assertEquals("078fc8b5", streamConfig.id());
     assertEquals("shipments", streamConfig.name());

@@ -8,23 +8,22 @@
 package co.decodable.sdk.pipeline;
 
 import co.decodable.sdk.pipeline.util.Incubating;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
+import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 /** Builder for creating {@literal DecodableStreamSource} instances. */
 @Incubating
 public interface DecodableStreamSourceBuilder<T> {
 
-  /**
-   * Specifies the name of the stream to read from. Either this or {@link #withStreamId(String)} may
-   * be used, but not both.
-   */
-  DecodableStreamSourceBuilder<T> withStreamName(String streamName);
+  DecodableStreamSourceBuilder<T> withStreamExecutionEnvironment(
+      StreamExecutionEnvironment streamExecutionEnvironment);
 
-  /**
-   * Specifies the id of the stream to read from. Either this or {@link #withStreamName(String)} may
-   * be used, but not both.
-   */
-  DecodableStreamSourceBuilder<T> withStreamId(String streamId);
+  DecodableStreamSourceBuilder<T> withWatermarkStrategy(WatermarkStrategy<T> watermarkStrategy);
+
+  /** Specifies the name of the stream to read from. */
+  DecodableStreamSourceBuilder<T> withStreamName(String streamName);
 
   /** Specifies the start-up mode to use when reading from the stream. */
   DecodableStreamSourceBuilder<T> withStartupMode(StartupMode startupMode);
@@ -33,6 +32,11 @@ public interface DecodableStreamSourceBuilder<T> {
   DecodableStreamSourceBuilder<T> withDeserializationSchema(
       DeserializationSchema<T> deserializationSchema);
 
-  /** Returns a new {@link DecodableStreamSource} for the given configuration. */
-  DecodableStreamSource<T> build();
+  DecodableStreamSourceBuilder<T> withName(String name);
+
+  /**
+   * Returns a new {@link DataStream} containing a {@link DecodableStreamSource} for the given
+   * configuration.
+   */
+  DataStream<T> build();
 }

@@ -7,7 +7,6 @@
  */
 package co.decodable.sdk.pipeline.internal;
 
-import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSinkBuilder;
 import co.decodable.sdk.pipeline.EnvironmentAccess;
 import co.decodable.sdk.pipeline.internal.config.StreamConfig;
@@ -19,22 +18,25 @@ import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
+import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSink;
 
 public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBuilder<T> {
 
-  private String streamId;
+  private DataStream<T> dataStream;
   private String streamName;
   private SerializationSchema<T> serializationSchema;
+  private String name;
 
   @Override
-  public DecodableStreamSinkBuilder<T> withStreamName(String streamName) {
-    this.streamName = streamName;
+  public DecodableStreamSinkBuilder<T> withDataStream(DataStream<T> dataStream) {
+    this.dataStream = dataStream;
     return this;
   }
 
   @Override
-  public DecodableStreamSinkBuilder<T> withStreamId(String streamId) {
-    this.streamId = streamId;
+  public DecodableStreamSinkBuilder<T> withStreamName(String streamName) {
+    this.streamName = streamName;
     return this;
   }
 
@@ -46,14 +48,19 @@ public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBui
   }
 
   @Override
-  public DecodableStreamSink<T> build() {
+  public DecodableStreamSinkBuilder<T> withName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  @Override
+  public DataStreamSink<T> build() {
     Objects.requireNonNull(serializationSchema, "serializationSchema");
 
     Map<String, String> environment =
         EnvironmentAccess.getEnvironment().getEnvironmentConfiguration();
 
-    StreamConfig streamConfig =
-        new StreamConfigMapping(environment).determineConfig(streamName, streamId);
+    StreamConfig streamConfig = new StreamConfigMapping(environment).determineConfig(streamName);
 
     KafkaSink<T> delegate =
         KafkaSink.<T>builder()
@@ -73,7 +80,14 @@ public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBui
             .setKafkaProducerConfig(toProperties(streamConfig.kafkaProperties()))
             .build();
 
-    return new DecodableStreamSinkImpl<T>(delegate);
+    var decodableStreamSink = new DecodableStreamSinkImpl<T>(delegate);
+
+    if (dataStream == null) {
+      throw new IllegalArgumentException("Argument dataStream is required.");
+    }
+
+    var operatorName = String.format("[decodable-pipeline-sdk-stream-%s] %s", streamName, name);
+    return dataStream.sinkTo(decodableStreamSink).name(operatorName);
   }
 
   private static Properties toProperties(Map<String, String> map) {

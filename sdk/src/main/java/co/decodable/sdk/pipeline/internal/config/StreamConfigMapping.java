@@ -21,7 +21,6 @@ public class StreamConfigMapping {
   private static final Pattern KEY_PATTERN = Pattern.compile("DECODABLE_STREAM_CONFIG_(.*)");
 
   private final Map<String, StreamConfig> configsByStreamName = new HashMap<>();
-  private final Map<String, StreamConfig> configsByStreamId = new HashMap<>();
 
   public StreamConfigMapping(Map<String, String> environment) {
     ObjectMapper mapper = new ObjectMapper();
@@ -40,7 +39,6 @@ public class StreamConfigMapping {
           StreamConfig streamConfig =
               new StreamConfig(
                   streamId, streamName, (Map<String, String>) config.get("properties"));
-          configsByStreamId.put(streamId, streamConfig);
           configsByStreamName.put(streamName, streamConfig);
         } catch (JsonProcessingException e) {
           throw new IllegalArgumentException(
@@ -51,31 +49,18 @@ public class StreamConfigMapping {
     }
   }
 
-  public StreamConfig determineConfig(String streamName, String streamId) {
+  public StreamConfig determineConfig(String streamName) {
     StreamConfig streamConfig = null;
 
     if (streamName != null) {
-      if (streamId != null) {
-        throw new IllegalStateException("Only one of stream name or stream id may be specified");
-      } else {
-        streamConfig = configsByStreamName.get(streamName);
-        if (streamConfig == null) {
-          throw new IllegalStateException(
-              String.format(
-                  "No topic name could be determined for stream with name '%s'", streamName));
-        }
+      streamConfig = configsByStreamName.get(streamName);
+      if (streamConfig == null) {
+        throw new IllegalStateException(
+            String.format(
+                "No topic name could be determined for stream with name '%s'", streamName));
       }
     } else {
-      if (streamId != null) {
-        streamConfig = configsByStreamId.get(streamId);
-        if (streamConfig == null) {
-          throw new IllegalStateException(
-              String.format("No topic name could be determined for stream with id '%s'", streamId));
-        }
-
-      } else {
-        throw new IllegalStateException("Either stream name or stream id must be specified");
-      }
+      throw new IllegalStateException("Stream name must be specified");
     }
 
     return streamConfig;

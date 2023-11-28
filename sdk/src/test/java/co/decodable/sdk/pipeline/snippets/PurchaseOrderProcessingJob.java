@@ -34,21 +34,22 @@ public class PurchaseOrderProcessingJob {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
     // @highlight region regex=".*"
-    DecodableStreamSource<PurchaseOrder> source = DecodableStreamSource.<PurchaseOrder>builder()
+    DataStream<PurchaseOrder> stream = DecodableStreamSource.<PurchaseOrder>builder()
+        .withStreamExecutionEnvironment(env)
+        .withWatermarkStrategy(WatermarkStrategy.noWatermarks())
         .withStreamName(PURCHASE_ORDERS_STREAM)
         .withDeserializationSchema(new JsonDeserializationSchema<>(PurchaseOrder.class))
+        .withName("Purchase Orders Source")
         .build();
 
-    DecodableStreamSink<PurchaseOrder> sink = DecodableStreamSink.<PurchaseOrder>builder()
+    stream = stream.map(new PurchaseOrderProcessor());
+
+    DecodableStreamSink.<PurchaseOrder>builder()
+        .withDataStream(stream)
         .withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
         .withSerializationSchema(new JsonSerializationSchema<>())
         .build();
     // @end
-
-    DataStream<PurchaseOrder> stream = env.fromSource(source, WatermarkStrategy.noWatermarks(), "Purchase Orders Source")
-        .map(new PurchaseOrderProcessor());
-
-    stream.sinkTo(sink);
 
     env.execute("Purchase Order Processor");
   } // @end region="custom-pipeline"

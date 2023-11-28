@@ -16,27 +16,46 @@ import co.decodable.sdk.pipeline.internal.config.StreamConfigMapping;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.KafkaSourceBuilder;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
+import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 public class DecodableStreamSourceBuilderImpl<T> implements DecodableStreamSourceBuilder<T> {
 
-  private String streamId;
+  private StreamExecutionEnvironment streamExecutionEnvironment;
+  private WatermarkStrategy<T> watermarkStrategy;
   private String streamName;
   private StartupMode startupMode;
   private DeserializationSchema<T> deserializationSchema;
+  private String name;
 
   @Override
-  public DecodableStreamSourceBuilder<T> withStreamName(String streamName) {
-    this.streamName = streamName;
+  public DecodableStreamSourceBuilder<T> withStreamExecutionEnvironment(
+      StreamExecutionEnvironment streamExecutionEnvironment) {
+    this.streamExecutionEnvironment = streamExecutionEnvironment;
     return this;
   }
 
   @Override
-  public DecodableStreamSourceBuilder<T> withStreamId(String streamId) {
-    this.streamId = streamId;
+  public DecodableStreamSourceBuilder<T> withWatermarkStrategy(
+      WatermarkStrategy<T> watermarkStrategy) {
+    this.watermarkStrategy = watermarkStrategy;
+    return this;
+  }
+
+  @Override
+  public DecodableStreamSourceBuilder<T> withName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  @Override
+  public DecodableStreamSourceBuilder<T> withStreamName(String streamName) {
+    this.streamName = streamName;
     return this;
   }
 
@@ -54,14 +73,13 @@ public class DecodableStreamSourceBuilderImpl<T> implements DecodableStreamSourc
   }
 
   @Override
-  public DecodableStreamSource<T> build() {
+  public DataStream<T> build() {
     Objects.requireNonNull(deserializationSchema, "deserializationSchema");
 
     Map<String, String> environment =
         EnvironmentAccess.getEnvironment().getEnvironmentConfiguration();
 
-    StreamConfig streamConfig =
-        new StreamConfigMapping(environment).determineConfig(streamName, streamId);
+    StreamConfig streamConfig = new StreamConfigMapping(environment).determineConfig(streamName);
 
     KafkaSourceBuilder<T> builder =
         KafkaSource.<T>builder()
@@ -78,7 +96,18 @@ public class DecodableStreamSourceBuilderImpl<T> implements DecodableStreamSourc
 
     KafkaSource<T> delegate = builder.build();
 
-    return new DecodableStreamSourceImpl<T>(delegate);
+    DecodableStreamSource<T> decodableStreamSource = new DecodableStreamSourceImpl<T>(delegate);
+
+    if (streamExecutionEnvironment == null) {
+      throw new IllegalArgumentException("Argument streamExecutionEnvironment is required.");
+    }
+    if (watermarkStrategy == null) {
+      throw new IllegalArgumentException("Argument watermarkStrategy is required.");
+    }
+
+    String operatorName = String.format("[decodable-pipeline-sdk-stream-%s] %s", streamName, name);
+    return streamExecutionEnvironment.fromSource(
+        decodableStreamSource, watermarkStrategy, operatorName);
   }
 
   private static Properties toProperties(Map<String, String> map) {

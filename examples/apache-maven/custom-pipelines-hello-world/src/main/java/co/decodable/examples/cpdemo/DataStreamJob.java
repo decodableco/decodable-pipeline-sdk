@@ -10,6 +10,8 @@ package co.decodable.examples.cpdemo;
 import static co.decodable.examples.cpdemo.DataStreamJob.PURCHASE_ORDERS_PROCESSED_STREAM;
 import static co.decodable.examples.cpdemo.DataStreamJob.PURCHASE_ORDERS_STREAM;
 
+import co.decodable.sdk.pipeline.DecodableStreamSink;
+import co.decodable.sdk.pipeline.DecodableStreamSource;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
@@ -20,8 +22,6 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import co.decodable.sdk.pipeline.DecodableDataStreamSinkBuilder;
-import co.decodable.sdk.pipeline.DecodableDataStreamSourceBuilder;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
 import co.decodable.sdk.pipeline.metadata.SourceStreams;
 
@@ -35,20 +35,19 @@ public class DataStreamJob {
 	public static void main(String[] args) throws Exception {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		DataStream<String> stream = new DecodableDataStreamSourceBuilder<String>(
-				env, WatermarkStrategy.noWatermarks()
-		)
+		DataStream<String> stream = DecodableStreamSource.<String>builder()
+			.withStreamExecutionEnvironment(env)
+			.withWatermarkStrategy(WatermarkStrategy.noWatermarks())
 			.withStreamName(PURCHASE_ORDERS_STREAM)
 			.withDeserializationSchema(new SimpleStringSchema())
 			.build()
-				.map(new NameConverter());
+			.map(new NameConverter());
 
-		new DecodableDataStreamSinkBuilder<String>(
-				stream
-		)
-				.withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
-				.withSerializationSchema(new SimpleStringSchema())
-				.build();
+		DecodableStreamSink.<String>builder()
+			.withDataStream(stream)
+			.withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
+			.withSerializationSchema(new SimpleStringSchema())
+			.build();
 
 		env.execute("Purchase Order Processor");
 	}
