@@ -39,6 +39,14 @@
  * {@link co.decodable.sdk.pipeline.metadata.SourceStreams} and
  * {@link co.decodable.sdk.pipeline.metadata.SinkStreams} annotations on the job class, as shown in
  * the example listing above.
+ *
+ * <h2>Operator naming convention</h2>
+ *
+ * Optionally, naming operators with a prefix of {@code [stream-<stream_name>]} will allow them to
+ * properly display input and output metrics by stream when run. For example, a stream source operator
+ * with the name {@code [stream-my_source_stream_1] Purchase Order Source} or a stream sink operator with the name
+ * {@code [stream-my_sink_stream_1] Purchase Order Sink} would generate metrics for that source and sink stream
+ * respectively.
  */
 //spotless:on
 package co.decodable.sdk.pipeline;

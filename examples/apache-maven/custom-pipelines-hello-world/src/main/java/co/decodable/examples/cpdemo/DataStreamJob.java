@@ -48,10 +48,12 @@ public class DataStreamJob {
 				.build();
 
 		DataStream<String> stream =
-			env.fromSource(source, WatermarkStrategy.noWatermarks(), "Purchase Orders Source")
+			env.fromSource(source, WatermarkStrategy.noWatermarks(),
+ 				"[stream-purchase-orders] Purchase Orders Source")
 				.map(new NameConverter());
 
-		stream.sinkTo(sink);
+		stream.sinkTo(sink)
+			.name("[stream-purchase-orders-processed] Purchase Orders Sink");
 
 		env.execute("Purchase Order Processor");
 	}
