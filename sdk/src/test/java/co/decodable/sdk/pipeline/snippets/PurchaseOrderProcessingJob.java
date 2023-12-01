@@ -45,10 +45,11 @@ public class PurchaseOrderProcessingJob {
         .build();
     // @end
 
-    DataStream<PurchaseOrder> stream = env.fromSource(source, WatermarkStrategy.noWatermarks(), "Purchase Orders Source")
+    DataStream<PurchaseOrder> stream = env.fromSource(source, WatermarkStrategy.noWatermarks(),
+                    "[stream-purchase-orders] Purchase Orders Source")
         .map(new PurchaseOrderProcessor());
 
-    stream.sinkTo(sink);
+    stream.sinkTo(sink).name("[stream-purchase-orders-processed] Purchase Orders Sink");
 
     env.execute("Purchase Order Processor");
   } // @end region="custom-pipeline"
