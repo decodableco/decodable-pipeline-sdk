@@ -42,10 +42,7 @@ public class MetadataProcessorTest {
             .toURI()
             .toURL();
 
-    Compilation compilation =
-        Compiler.javac()
-            .withProcessors(new MetadataProcessor())
-            .compile(JavaFileObjects.forResource(jobFile));
+    Compilation compilation = compile(jobFile);
 
     assertThat(compilation).succeeded();
     assertThat(compilation)
@@ -63,10 +60,7 @@ public class MetadataProcessorTest {
             .toURI()
             .toURL();
 
-    Compilation compilation =
-        Compiler.javac()
-            .withProcessors(new MetadataProcessor())
-            .compile(JavaFileObjects.forResource(jobFile));
+    Compilation compilation = compile(jobFile);
 
     assertThat(compilation).succeeded();
     var file = compilation.generatedFile(StandardLocation.CLASS_OUTPUT, OUTPUT_PATH).get();
@@ -84,10 +78,7 @@ public class MetadataProcessorTest {
             .toURI()
             .toURL();
 
-    Compilation compilation =
-        Compiler.javac()
-            .withProcessors(new MetadataProcessor())
-            .compile(JavaFileObjects.forResource(jobFile));
+    Compilation compilation = compile(jobFile);
 
     assertThat(compilation).succeeded();
     var file = compilation.generatedFile(StandardLocation.CLASS_OUTPUT, OUTPUT_PATH).get();
@@ -110,16 +101,19 @@ public class MetadataProcessorTest {
             .toURI()
             .toURL();
 
-    var compilation =
-        Compiler.javac()
-            .withProcessors(new MetadataProcessor())
-            .compile(JavaFileObjects.forResource(fileWithoutAnnotations));
+    var compilation = compile(fileWithoutAnnotations);
 
     assertThat(compilation).succeeded();
     assertThat(handler.getRecords()).hasSize(1);
     var record = handler.getRecords().get(0);
     assertThat(record.getLevel()).isEqualTo(Level.WARNING);
     assertThat(record.getMessage()).contains("Neither source nor sink streams were declared");
+  }
+
+  private static Compilation compile(URL fileWithoutAnnotations) {
+    return Compiler.javac()
+        .withProcessors(new MetadataProcessor())
+        .compile(JavaFileObjects.forResource(fileWithoutAnnotations));
   }
 
   private static class TestHandler extends Handler {
