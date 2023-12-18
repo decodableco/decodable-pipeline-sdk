@@ -16,15 +16,17 @@ import com.google.testing.compile.Compilation;
 import com.google.testing.compile.Compiler;
 import com.google.testing.compile.JavaFileObjects;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.tools.StandardLocation;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +53,49 @@ public class MetadataProcessorTest {
         .hasContents(
             CharSource.wrap(
                     "source-streams=purchase-orders\nsink-streams=purchase-orders-processed\n")
-                .asByteSource(Charset.forName("UTF-8")));
+                .asByteSource(StandardCharsets.UTF_8));
+  }
+
+  @Test
+  public void onlySourcesPresent() throws IOException {
+    URL jobFile =
+        new File("./src/test/java/co/decodable/sdk/pipeline/snippets/DummySourcesOnlyJob.java")
+            .toURI()
+            .toURL();
+
+    Compilation compilation =
+        Compiler.javac()
+            .withProcessors(new MetadataProcessor())
+            .compile(JavaFileObjects.forResource(jobFile));
+
+    assertThat(compilation).succeeded();
+    var file = compilation.generatedFile(StandardLocation.CLASS_OUTPUT, OUTPUT_PATH).get();
+    var fileContents = file.getCharContent(false).toString();
+    assertThat(fileContents)
+        .endsWith("\nsink-streams=\n")
+        .hasLineCount(2)
+        .containsPattern(Pattern.compile("^source-streams=source[1-2],source[1-2]\\n"));
+  }
+
+  @Test
+  public void onlySinksPresent() throws IOException {
+    URL jobFile =
+        new File("./src/test/java/co/decodable/sdk/pipeline/snippets/DummySinksOnlyJob.java")
+            .toURI()
+            .toURL();
+
+    Compilation compilation =
+        Compiler.javac()
+            .withProcessors(new MetadataProcessor())
+            .compile(JavaFileObjects.forResource(jobFile));
+
+    assertThat(compilation).succeeded();
+    var file = compilation.generatedFile(StandardLocation.CLASS_OUTPUT, OUTPUT_PATH).get();
+    var fileContents = file.getCharContent(false).toString();
+    assertThat(fileContents)
+        .startsWith("source-streams=\n")
+        .hasLineCount(2)
+        .containsPattern(Pattern.compile("\\nsink-streams=sink[1-2],sink[1-2]$"));
   }
 
   @Test
