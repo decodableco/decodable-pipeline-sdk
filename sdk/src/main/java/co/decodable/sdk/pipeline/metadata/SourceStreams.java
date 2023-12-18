@@ -14,14 +14,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Denotes the source streams accessed by a custom pipeline. Must be specified on the job class in
- * order for the Decodable platform to display the connected streams.
+ * Denotes the source streams accessed by a custom pipeline. Only streams referenced in {@link
+ * SourceStreams} or {@link SinkStreams} on the job class will be accessible to the pipeline.
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 @Incubating
 public @interface SourceStreams {
 
-  /** One or more source stream name. */
+  /** Names of the source streams. */
   String[] value();
 }

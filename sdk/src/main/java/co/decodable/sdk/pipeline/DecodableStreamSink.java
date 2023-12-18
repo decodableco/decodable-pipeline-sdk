@@ -15,7 +15,9 @@ import org.apache.flink.api.connector.sink2.TwoPhaseCommittingSink;
 
 /**
  * A {@link StatefulSink} which allows to write to a <a
- * href="https://docs.decodable.co/docs/streams">Decodable stream</a> from within a Flink job.
+ * href="https://docs.decodable.co/docs/streams">Decodable stream</a> from within a Flink job. The
+ * stream must be referenced in {@link co.decodable.sdk.pipeline.metadata.SinkStreams} to be
+ * accessible.
  *
  * @param <T> The data type of this stream
  */
