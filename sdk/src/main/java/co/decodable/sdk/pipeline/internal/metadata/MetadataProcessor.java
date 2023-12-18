@@ -52,10 +52,14 @@ public class MetadataProcessor extends AbstractProcessor {
       Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(annotation);
       for (Element annotated : annotatedElements) {
         SourceStreams sourceStreams = annotated.getAnnotation(SourceStreams.class);
-        allSourceStreams.addAll(Arrays.asList(sourceStreams.value()));
+        if (sourceStreams != null && sourceStreams.value() != null) {
+          allSourceStreams.addAll(Arrays.asList(sourceStreams.value()));
+        }
 
         SinkStreams sinkStreams = annotated.getAnnotation(SinkStreams.class);
-        allSinkStreams.addAll(Arrays.asList(sinkStreams.value()));
+        if (sinkStreams != null && sinkStreams.value() != null) {
+          allSinkStreams.addAll(Arrays.asList(sinkStreams.value()));
+        }
       }
     }
 
