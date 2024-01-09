@@ -14,7 +14,9 @@ import org.apache.flink.api.java.typeutils.ResultTypeQueryable;
 
 /**
  * A {@link Source} which allows to retrieve the contents of a <a
- * href="https://docs.decodable.co/docs/streams">Decodable stream</a> from within a Flink job.
+ * href="https://docs.decodable.co/docs/streams">Decodable stream</a> from within a Flink job. The
+ * stream must be referenced in {@link co.decodable.sdk.pipeline.metadata.SourceStreams} to be
+ * accessible.
  *
  * @param <T> The data type of this stream
  */
