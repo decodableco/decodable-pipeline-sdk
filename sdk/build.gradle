@@ -10,7 +10,7 @@ plugins {
     id 'eclipse'
     id 'com.diffplug.spotless' version '6.8.0'
     id 'maven-publish'
-    id 'org.jreleaser' version '1.7.0'
+    id 'org.jreleaser' version '1.10.0'
 }
 
 group = 'co.decodable'
