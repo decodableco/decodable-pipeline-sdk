@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    def flinkVersion = '1.16.1'
+    def flinkVersion = '1.16.3'
 
     api "org.apache.flink:flink-core:$flinkVersion"
     implementation "org.apache.flink:flink-connector-kafka:$flinkVersion"
@@ -76,7 +76,7 @@ tasks.withType(Javadoc) {
     title "Decodable Pipeline SDK ${project.version}"
     exclude 'co/decodable/sdk/pipeline/internal'
     options.addStringOption('-snippet-path', sourceSets.test.java.srcDirs.first().getPath())
-    options.header = 'Copyright © 2023 <a style="text-transform:none;" href="https://www.decodable.co">Decodable, Inc.</a>; Licensed under the Apache License, version 2.0.'
+    options.header = 'Copyright © 2024 <a style="text-transform:none;" href="https://www.decodable.co">Decodable, Inc.</a>; Licensed under the Apache License, version 2.0.'
     javadocTool = javaToolchains.javadocToolFor {
         languageVersion = JavaLanguageVersion.of(20)
     }
