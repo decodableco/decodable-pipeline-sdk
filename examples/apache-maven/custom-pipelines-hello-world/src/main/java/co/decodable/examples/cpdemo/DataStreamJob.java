@@ -13,7 +13,11 @@ import static co.decodable.examples.cpdemo.DataStreamJob.PURCHASE_ORDERS_STREAM;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.metrics.Counter;
+import org.apache.flink.metrics.Gauge;
+import org.apache.flink.metrics.SimpleCounter;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
@@ -63,16 +67,22 @@ public class DataStreamJob {
 		private static final long serialVersionUID = 1L;
 
 		private transient ObjectMapper mapper;
+		private Counter recordsProcessed;
 
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			mapper = new ObjectMapper();
+			recordsProcessed = getRuntimeContext()
+				.getMetricGroup()
+				.addGroup("DecodableMetrics")
+				.counter("recordsProcessed", new SimpleCounter());
 		}
 
 		@Override
 		public String map(String value) throws Exception {
 			ObjectNode purchaseOrder = (ObjectNode) mapper.readTree(value);
 			purchaseOrder.put("customer_name", purchaseOrder.get("customer_name").asText().toUpperCase());
+			recordsProcessed.inc();
 			return mapper.writeValueAsString(purchaseOrder);
 		}
 	}
