@@ -15,10 +15,15 @@ import co.decodable.sdk.pipeline.DecodableStreamSource;
 import co.decodable.sdk.pipeline.PurchaseOrder;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
 import co.decodable.sdk.pipeline.metadata.SourceStreams;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.formats.json.JsonDeserializationSchema;
 import org.apache.flink.formats.json.JsonSerializationSchema;
+import org.apache.flink.metrics.Counter;
+import org.apache.flink.metrics.SimpleCounter;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
@@ -53,16 +58,28 @@ public class PurchaseOrderProcessingJob {
 
     env.execute("Purchase Order Processor");
   } // @end region="custom-pipeline"
-  //spotless:on
 
   public static class PurchaseOrderProcessor extends RichMapFunction<PurchaseOrder, PurchaseOrder> {
 
     private static final long serialVersionUID = 1L;
+    private Counter recordsProcessed;
+
+    // @start region="metric-group"
+    @Override
+    public void open(Configuration parameters) throws Exception {
+      recordsProcessed = getRuntimeContext()
+              .getMetricGroup()
+              .addGroup("DecodableMetrics")
+              .counter("recordsProcessed", new SimpleCounter());
+    }
+    // @end region="metric-group"
 
     @Override
     public PurchaseOrder map(PurchaseOrder purchaseOrder) throws Exception {
       purchaseOrder.customerName = purchaseOrder.customerName.toUpperCase();
+      recordsProcessed.inc();
       return purchaseOrder;
     }
   }
 }
+//spotless:on
