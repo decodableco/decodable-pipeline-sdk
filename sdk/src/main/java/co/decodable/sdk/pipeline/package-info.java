@@ -47,6 +47,14 @@
  * with the name {@code [stream-my_source_stream_1] Purchase Order Source} or a stream sink operator with the name
  * {@code [stream-my_sink_stream_1] Purchase Order Sink} would generate metrics for that source and sink stream
  * respectively.
+ *
+ * <h2>Custom Metrics</h2>
+ *
+ * By default, Decodable custom pipelines expose a set of Flink metrics. To expose additional metrics of your job,
+ * add the DecodableMetrics metric group to your registered metric:
+ *
+ * <p>{@snippet class = "co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob"
+ * region = "metric-group"}
  */
 //spotless:on
 package co.decodable.sdk.pipeline;
