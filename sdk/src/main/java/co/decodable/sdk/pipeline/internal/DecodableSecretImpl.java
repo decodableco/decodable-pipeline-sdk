@@ -9,43 +9,68 @@ package co.decodable.sdk.pipeline.internal;
 
 import co.decodable.sdk.pipeline.DecodableSecret;
 import co.decodable.sdk.pipeline.exception.SecretNotFoundException;
+import co.decodable.sdk.pipeline.util.VisibleForTesting;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
-import org.apache.commons.io.FileUtils;
 
 public class DecodableSecretImpl implements DecodableSecret {
-  private static final String SECRET_DIRECTORY = "/opt/flink/opt/secrets/";
+
+  private static final Path SECRET_DIRECTORY = Path.of("/opt/pipeline-secrets/");
+
+  /** Will be removed once the backend doesn't use that path any more */
+  @Deprecated(forRemoval = true)
+  private static final Path LEGACY_SECRET_DIRECTORY = Path.of("/opt/flink/opt/secrets/");
+
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
-  private final SecretMetadata metadata;
   private final String value;
+  private final SecretMetadata metadata;
 
   public DecodableSecretImpl(String name) {
-    this(name, SECRET_DIRECTORY);
+    this(name, SECRET_DIRECTORY, LEGACY_SECRET_DIRECTORY);
   }
 
-  DecodableSecretImpl(String name, String secretDirectory) {
-    if (!secretDirectory.endsWith("/")) {
-      secretDirectory = secretDirectory + "/";
+  @VisibleForTesting
+  DecodableSecretImpl(String name, Path secretsDirectory, Path fallbackDirectory) {
+    var secret = getSecret(secretsDirectory, name, false);
+    if (secret == null) {
+      secret = getSecret(fallbackDirectory, name, true);
     }
-    var secretFile = new File(secretDirectory + name);
-    var secretMetadataFile = new File(secretDirectory + name + ".metadata");
-    if (!secretFile.exists() || !secretMetadataFile.exists()) {
-      throw new SecretNotFoundException(
-          String.format(
-              "Secret [%s] not found. Please make sure it is included in this pipeline's properties.",
-              name));
+
+    this.value = secret.value;
+    this.metadata = secret.metadata;
+  }
+
+  private static SecretDescriptor getSecret(
+      Path secretsDirectory, String secretName, boolean assertExistence) {
+    var secretFile = secretsDirectory.resolve(secretName);
+    var secretMetadataFile = secretsDirectory.resolve(secretName + ".metadata");
+    if (!Files.exists(secretFile) || !Files.exists(secretMetadataFile)) {
+      if (assertExistence) {
+        throw new SecretNotFoundException(
+            String.format(
+                "Secret [%s] not found. Please make sure it is included in this pipeline's properties.",
+                secretName));
+      } else {
+        return null;
+      }
     }
+
     try {
-      this.value = FileUtils.readFileToString(secretFile, StandardCharsets.UTF_8);
-      this.metadata = objectMapper.readValue(secretMetadataFile, SecretMetadata.class);
+      var value = Files.readString(secretFile, StandardCharsets.UTF_8);
+      var metadata = objectMapper.readValue(secretMetadataFile.toFile(), SecretMetadata.class);
+
+      return new SecretDescriptor(value, metadata);
     } catch (IOException e) {
       throw new SecretNotFoundException(
-          String.format("Could not read secret [%s]. Please contact Decodable support.", name), e);
+          String.format(
+              "Could not read secret [%s]. Please contact Decodable support.", secretName),
+          e);
     }
   }
 
@@ -72,6 +97,16 @@ public class DecodableSecretImpl implements DecodableSecret {
   @Override
   public Instant updateTime() {
     return metadata.updateTime;
+  }
+
+  private static class SecretDescriptor {
+    String value;
+    SecretMetadata metadata;
+
+    public SecretDescriptor(String value, SecretMetadata metadata) {
+      this.value = value;
+      this.metadata = metadata;
+    }
   }
 
   private static class SecretMetadata {

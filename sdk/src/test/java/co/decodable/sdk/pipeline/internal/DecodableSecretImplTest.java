@@ -7,7 +7,8 @@
  */
 package co.decodable.sdk.pipeline.internal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import co.decodable.sdk.pipeline.exception.SecretNotFoundException;
 import java.io.IOException;
@@ -36,8 +37,35 @@ public class DecodableSecretImplTest {
                 secretMetadataFile.getFileName().toString(), createEpoch, updateEpoch)
             .getBytes(StandardCharsets.UTF_8));
     var secret =
+        new DecodableSecretImpl(secretFile.getFileName().toString(), secretFile.getParent(), null);
+    assertThat(secret.value()).isEqualTo("my-secret-value");
+    assertThat(secret.name()).startsWith("secret");
+    assertThat(secret.description()).isEqualTo("My secret");
+    assertThat(secret.createTime()).isEqualTo(createTime);
+    assertThat(secret.updateTime()).isEqualTo(updateTime);
+  }
+
+  @Test
+  public void fallbackExists() throws IOException {
+    var secretFile = Files.createTempFile("secret", "");
+    var metadataPath = secretFile.toAbsolutePath() + ".metadata";
+    var secretMetadataFile = Files.createFile(Path.of(metadataPath));
+    long createEpoch = 1700503745;
+    var createTime = Instant.ofEpochMilli(createEpoch);
+    long updateEpoch = 1700503746;
+    var updateTime = Instant.ofEpochMilli(updateEpoch);
+    Files.write(secretFile, "my-secret-value".getBytes(StandardCharsets.UTF_8));
+    Files.write(
+        secretMetadataFile,
+        String.format(
+                "{\"name\":\"%s\",\"description\":\"My secret\",\"create_time\":\"%d\",\"update_time\":\"%d\"}",
+                secretMetadataFile.getFileName().toString(), createEpoch, updateEpoch)
+            .getBytes(StandardCharsets.UTF_8));
+    var secret =
         new DecodableSecretImpl(
-            secretFile.getFileName().toString(), secretFile.getParent().toString());
+            secretFile.getFileName().toString(),
+            Files.createTempDirectory("DecodableSecretImplTest"),
+            secretFile.getParent());
     assertThat(secret.value()).isEqualTo("my-secret-value");
     assertThat(secret.name()).startsWith("secret");
     assertThat(secret.description()).isEqualTo("My secret");
