@@ -45,7 +45,7 @@ implementation 'co.decodable:decodable-pipeline-sdk:1.0.0.Beta5'
 See the project under _examples/apache-maven/custom-pipelines-hello-world/_ for a complete example project
 which shows how to use the Decodable SDK for implementing and testing Flink jobs to be executed as custom pipelines on Decodable.
 
-Refer to the [API documentation](https://decodableco.github.io/decodable-pipeline-sdk/api-docs/current/index.html) to learn how to use this SDK for implement your custom Flink jobs.
+Refer to the [API documentation](https://docs.decodable.co/api/pipeline-sdk.html) to learn how to use this SDK for implement your custom Flink jobs.
 
 Refer to the [documentation](https://docs.decodable.co/docs/create-pipelines-using-your-own-apache-flink-jobs) for instructions on how to deploy your job as a custom pipeline on the Decodable platform.
 
