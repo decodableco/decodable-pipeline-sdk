@@ -49,7 +49,8 @@ public class DataStreamJobTest {
               + "  \"product_id\" : 108,\n"
               + "  \"order_status\" : false\n"
               + "}";
-      String value2 = "{\n"
+      String value2 =
+          "{\n"
               + "  \"order_id\" : 19002,\n"
               + "  \"order_date\" : \"2023-06-09 11:25:33\",\n"
               + "  \"customer_name\" : \"Erwin Mausepeter\",\n"
@@ -68,7 +69,7 @@ public class DataStreamJobTest {
       StreamRecord<String> result =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
       StreamRecord<String> result2 =
-              ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
+          ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
       ObjectNode purchaseOrder = (ObjectNode) new ObjectMapper().readTree(result.value());
       ObjectNode purchaseOrder2 = (ObjectNode) new ObjectMapper().readTree(result2.value());
 
