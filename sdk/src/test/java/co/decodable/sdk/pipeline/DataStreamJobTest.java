@@ -49,19 +49,33 @@ public class DataStreamJobTest {
               + "  \"product_id\" : 108,\n"
               + "  \"order_status\" : false\n"
               + "}";
+      String value2 =
+          "{\n"
+              + "  \"order_id\" : 19002,\n"
+              + "  \"order_date\" : \"2023-06-09 11:25:33\",\n"
+              + "  \"customer_name\" : \"Erwin Mausepeter\",\n"
+              + "  \"price\" : 35.00,\n"
+              + "  \"product_id\" : 22,\n"
+              + "  \"order_status\" : false\n"
+              + "}";
 
       // given
       ctx.stream(PURCHASE_ORDERS).add(new StreamRecord<>(value));
+      ctx.stream(PURCHASE_ORDERS).add(new StreamRecord<>(value2));
 
       // when (as an example, PurchaseOrderProcessingJob upper-cases the customer name)
       ctx.runJobAsync(PurchaseOrderProcessingJob::main);
 
       StreamRecord<String> result =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
+      StreamRecord<String> result2 =
+          ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
       ObjectNode purchaseOrder = (ObjectNode) new ObjectMapper().readTree(result.value());
+      ObjectNode purchaseOrder2 = (ObjectNode) new ObjectMapper().readTree(result2.value());
 
       // then
       assertThat(purchaseOrder.get("customer_name").asText()).isEqualTo("YOLANDA HAGENES");
+      assertThat(purchaseOrder2.get("customer_name").asText()).isEqualTo("ERWIN MAUSEPETER");
     }
   }
 }
