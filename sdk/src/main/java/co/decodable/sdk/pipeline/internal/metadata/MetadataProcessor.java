@@ -20,6 +20,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
@@ -41,12 +42,12 @@ public class MetadataProcessor extends AbstractProcessor {
           .map(Class::getName)
           .collect(Collectors.toSet());
 
-  private final Set<String> allSourceStreams;
-  private final Set<String> allSinkStreams;
+  private final Map<String, List<String>> sourceStreamsByEntryClass;
+  private final Map<String, List<String>> sinkStreamsByEntryClass;
 
   public MetadataProcessor() {
-    allSourceStreams = new HashSet<>();
-    allSinkStreams = new HashSet<>();
+    sourceStreamsByEntryClass = new HashMap<>();
+    sinkStreamsByEntryClass = new HashMap<>();
   }
 
   @Override
@@ -61,20 +62,28 @@ public class MetadataProcessor extends AbstractProcessor {
     for (TypeElement annotation : filteredAnnotations) {
       Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(annotation);
       for (Element annotated : annotatedElements) {
+        var elementKind = annotated.getKind();
+        if (elementKind != ElementKind.CLASS) {
+          throw new RuntimeException(
+              "@SourceStreams and @SinkStreams annotations can only be used at class level");
+        }
+        var qualifiedClassName = ((TypeElement) annotated).getQualifiedName();
         SourceStreams sourceStreams = annotated.getAnnotation(SourceStreams.class);
         if (sourceStreams != null && sourceStreams.value() != null) {
-          allSourceStreams.addAll(Arrays.asList(sourceStreams.value()));
+          sourceStreamsByEntryClass.put(
+              qualifiedClassName.toString(), Arrays.asList(sourceStreams.value()));
         }
 
         SinkStreams sinkStreams = annotated.getAnnotation(SinkStreams.class);
         if (sinkStreams != null && sinkStreams.value() != null) {
-          allSinkStreams.addAll(Arrays.asList(sinkStreams.value()));
+          sinkStreamsByEntryClass.put(
+              qualifiedClassName.toString(), Arrays.asList(sinkStreams.value()));
         }
       }
     }
 
     if (roundEnv.processingOver()) {
-      if (allSourceStreams.isEmpty() && allSinkStreams.isEmpty()) {
+      if (sourceStreamsByEntryClass.isEmpty() && sinkStreamsByEntryClass.isEmpty()) {
         LOGGER.log(
             Level.WARNING,
             "Neither source nor sink streams were declared. No streams will be available to this pipeline. If this "
@@ -88,9 +97,16 @@ public class MetadataProcessor extends AbstractProcessor {
                 .createResource(StandardLocation.CLASS_OUTPUT, "", STREAM_NAMES_FILE);
 
         try (PrintWriter out = new PrintWriter(streamNamesFile.openWriter())) {
-          out.println(
-              "source-streams=" + allSourceStreams.stream().collect(Collectors.joining(",")));
-          out.println("sink-streams=" + allSinkStreams.stream().collect(Collectors.joining(",")));
+          out.println("source-streams:");
+          sourceStreamsByEntryClass.forEach(
+              (entryClass, streams) ->
+                  out.println(
+                      entryClass + "=" + streams.stream().collect(Collectors.joining(","))));
+          out.println("sink-streams:");
+          sinkStreamsByEntryClass.forEach(
+              (entryClass, streams) ->
+                  out.println(
+                      entryClass + "=" + streams.stream().collect(Collectors.joining(","))));
         }
       } catch (IOException e) {
         processingEnv
