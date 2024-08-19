@@ -55,6 +55,14 @@ public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBui
     StreamConfig streamConfig =
         new StreamConfigMapping(environment).determineConfig(streamName, streamId);
 
+    // The provided transactionalIdPrefix is unique only to the job. In the case of a custom job
+    // with multiple sinks,
+    // sharing the same prefix, Kafka will fence the producers off, believing them to be zombies. We
+    // append a unique
+    // topic identifier to the provided prefix to ensure that this does not happen.
+    String txIdPrefix =
+        String.format("%s-%s", streamConfig.transactionalIdPrefix(), streamConfig.topic());
+
     KafkaSink<T> delegate =
         KafkaSink.<T>builder()
             .setBootstrapServers(streamConfig.bootstrapServers())
@@ -69,7 +77,7 @@ public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBui
                     : "at-least-once".equals(streamConfig.deliveryGuarantee())
                         ? DeliveryGuarantee.AT_LEAST_ONCE
                         : DeliveryGuarantee.NONE)
-            .setTransactionalIdPrefix(streamConfig.transactionalIdPrefix())
+            .setTransactionalIdPrefix(txIdPrefix)
             .setKafkaProducerConfig(toProperties(streamConfig.kafkaProperties()))
             .build();
 
