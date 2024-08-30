@@ -64,6 +64,6 @@ spec:
     properties:
         flink_version: 1.16-java11
     execution:
-      active: false
+      active: true
       task_count: 1
       task_size: M
