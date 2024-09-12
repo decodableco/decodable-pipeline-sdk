@@ -10,15 +10,28 @@ package co.decodable.sdk.pipeline.internal.config;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StreamConfigMapping {
 
   private static final Pattern KEY_PATTERN = Pattern.compile("DECODABLE_STREAM_CONFIG_(.*)");
+  private static final Set<String> SECRET_PROPERTY_KEYS =
+      Set.of(
+          "properties.ssl.keystore.key",
+          "properties.ssl.key.password",
+          "properties.ssl.truststore.password",
+          "properties.sasl.jaas.config",
+          "properties.sasl.mechanism",
+          "properties.ssl.truststore.certificates",
+          "properties.ssl.keystore.certificate.chain");
 
   private final Map<String, StreamConfig> configsByStreamName = new HashMap<>();
   private final Map<String, StreamConfig> configsByStreamId = new HashMap<>();
@@ -31,22 +44,37 @@ public class StreamConfigMapping {
       if (keyMatcher.matches()) {
         String streamId = keyMatcher.group(1);
 
+        Map<String, Object> config;
         try {
-          Map<String, Object> config =
-              mapper.readValue(entry.getValue(), new TypeReference<Map<String, Object>>() {});
-          String streamName = (String) config.get("name");
-
-          @SuppressWarnings("unchecked")
-          StreamConfig streamConfig =
-              new StreamConfig(
-                  streamId, streamName, (Map<String, String>) config.get("properties"));
-          configsByStreamId.put(streamId, streamConfig);
-          configsByStreamName.put(streamName, streamConfig);
+          config = mapper.readValue(entry.getValue(), new TypeReference<Map<String, Object>>() {});
         } catch (JsonProcessingException e) {
           throw new IllegalArgumentException(
               String.format("Couldn't parse stream configuration env variable %s", entry.getKey()),
               e);
         }
+
+        String streamName = (String) config.get("name");
+        Map<String, Object> properties = (Map<String, Object>) config.get("properties");
+
+        for (String secretKey : SECRET_PROPERTY_KEYS) {
+          properties.computeIfPresent(
+              secretKey,
+              (k, v) -> {
+                try {
+                  // Attempt to read the secret property from a file
+                  // For backwards compatibility, use the property value if the file doesn't exist
+                  return Files.readString(Paths.get((String) v));
+                } catch (IOException e) {
+                  return (String) v;
+                }
+              });
+        }
+
+        @SuppressWarnings("unchecked")
+        StreamConfig streamConfig =
+            new StreamConfig(streamId, streamName, (Map<String, String>) config.get("properties"));
+        configsByStreamId.put(streamId, streamConfig);
+        configsByStreamName.put(streamName, streamConfig);
       }
     }
   }
