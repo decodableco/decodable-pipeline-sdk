@@ -11,6 +11,9 @@ bin
 # VSCode
 .vscode
 
+# IntelliJ
+.idea
+
 # Apache Maven
 dependency-reduced-pom.xml
 target
