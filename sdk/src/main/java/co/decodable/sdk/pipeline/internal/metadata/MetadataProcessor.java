@@ -11,7 +11,12 @@ import co.decodable.sdk.pipeline.metadata.SinkStreams;
 import co.decodable.sdk.pipeline.metadata.SourceStreams;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -41,12 +46,10 @@ public class MetadataProcessor extends AbstractProcessor {
           .map(Class::getName)
           .collect(Collectors.toSet());
 
-  private final Set<String> allSourceStreams;
-  private final Set<String> allSinkStreams;
+  private final Set<StreamConfig> streamConfigs;
 
   public MetadataProcessor() {
-    allSourceStreams = new HashSet<>();
-    allSinkStreams = new HashSet<>();
+    streamConfigs = new TreeSet<MetadataProcessor.StreamConfig>();
   }
 
   @Override
@@ -61,20 +64,26 @@ public class MetadataProcessor extends AbstractProcessor {
     for (TypeElement annotation : filteredAnnotations) {
       Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(annotation);
       for (Element annotated : annotatedElements) {
+
+        // safe cast, the annotation is only allowed for types
+        StreamConfig config =
+            new StreamConfig(((TypeElement) annotated).getQualifiedName().toString());
+        streamConfigs.add(config);
+
         SourceStreams sourceStreams = annotated.getAnnotation(SourceStreams.class);
         if (sourceStreams != null && sourceStreams.value() != null) {
-          allSourceStreams.addAll(Arrays.asList(sourceStreams.value()));
+          config.addSourceStreams(Arrays.asList(sourceStreams.value()));
         }
 
         SinkStreams sinkStreams = annotated.getAnnotation(SinkStreams.class);
         if (sinkStreams != null && sinkStreams.value() != null) {
-          allSinkStreams.addAll(Arrays.asList(sinkStreams.value()));
+          config.addSinkStreams(Arrays.asList(sinkStreams.value()));
         }
       }
     }
 
     if (roundEnv.processingOver()) {
-      if (allSourceStreams.isEmpty() && allSinkStreams.isEmpty()) {
+      if (streamConfigs.isEmpty()) {
         LOGGER.log(
             Level.WARNING,
             "Neither source nor sink streams were declared. No streams will be available to this pipeline. If this "
@@ -88,9 +97,20 @@ public class MetadataProcessor extends AbstractProcessor {
                 .createResource(StandardLocation.CLASS_OUTPUT, "", STREAM_NAMES_FILE);
 
         try (PrintWriter out = new PrintWriter(streamNamesFile.openWriter())) {
-          out.println(
-              "source-streams=" + allSourceStreams.stream().collect(Collectors.joining(",")));
-          out.println("sink-streams=" + allSinkStreams.stream().collect(Collectors.joining(",")));
+          for (StreamConfig config : streamConfigs) {
+            if (!config.sourceStreams.isEmpty()) {
+              out.println(
+                  config.className
+                      + ".source-streams="
+                      + config.sourceStreams.stream().collect(Collectors.joining(",")));
+            }
+            if (!config.sinkStreams.isEmpty()) {
+              out.println(
+                  config.className
+                      + ".sink-streams="
+                      + config.sinkStreams.stream().collect(Collectors.joining(",")));
+            }
+          }
         }
       } catch (IOException e) {
         processingEnv
@@ -108,5 +128,44 @@ public class MetadataProcessor extends AbstractProcessor {
   @Override
   public SourceVersion getSupportedSourceVersion() {
     return SourceVersion.latest();
+  }
+
+  private static class StreamConfig implements Comparable<StreamConfig> {
+    final String className;
+    final Set<String> sourceStreams;
+    final Set<String> sinkStreams;
+
+    public StreamConfig(String className) {
+      this.className = className;
+      sourceStreams = new LinkedHashSet<String>();
+      sinkStreams = new LinkedHashSet<String>();
+    }
+
+    public void addSourceStreams(Collection<String> sourceStreams) {
+      this.sourceStreams.addAll(sourceStreams);
+    }
+
+    public void addSinkStreams(Collection<String> sinkStreams) {
+      this.sinkStreams.addAll(sinkStreams);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(className);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      StreamConfig other = (StreamConfig) obj;
+      return Objects.equals(className, other.className);
+    }
+
+    @Override
+    public int compareTo(StreamConfig o) {
+      return className.compareTo(o.className);
+    }
   }
 }
