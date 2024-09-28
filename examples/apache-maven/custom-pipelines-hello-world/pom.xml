@@ -36,6 +36,11 @@
 			<artifactId>decodable-pipeline-sdk</artifactId>
 			<version>${decodable.pipeline.sdk.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.15.2</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.flink</groupId>
@@ -43,18 +48,13 @@
 			<version>${flink.version}</version>
 			<scope>provided</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-clients</artifactId>
 			<version>${flink.version}</version>
-			<scope>provided</scope>
+			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.15.2</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
@@ -83,19 +83,13 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>${log4j.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-			<version>${log4j.version}</version>
-			<scope>runtime</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>${log4j.version}</version>
-			<scope>runtime</scope>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -104,10 +98,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
+				<version>3.13.0</version>
 				<configuration>
-					<source>${target.java.version}</source>
-					<target>${target.java.version}</target>
+					<release>${target.java.version}</release>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -125,23 +118,11 @@
 							<artifactSet>
 								<excludes>
 									<exclude>org.apache.flink:flink-shaded-force-shading</exclude>
-									<exclude>com.google.code.findbugs:jsr305</exclude>
 									<exclude>org.slf4j:*</exclude>
-									<exclude>org.apache.logging.log4j:*</exclude>
+									<exclude>org.lz4:lz4-java</exclude>
+									<exclude>org.xerial.snappy:snappy-java</exclude>
 								</excludes>
 							</artifactSet>
-							<filters>
-								<filter>
-									<!-- Do not copy the signatures in the META-INF folder.
-									Otherwise, this might cause SecurityExceptions when using the JAR. -->
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
