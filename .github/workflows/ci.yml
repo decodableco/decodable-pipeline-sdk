@@ -40,7 +40,7 @@ jobs:
         run: cd sdk && ./gradlew build publishToMavenLocal
 
       - name: Build example project with Maven
-        run: cd examples/apache-maven/custom-pipelines-hello-world && ./mvnw -B clean verify
+        run: cd examples/custom-pipelines-hello-world && ./mvnw -B clean verify
 
       - name: Build example project with Gradle
-        run: cd examples/apache-maven/custom-pipelines-hello-world && ./gradlew clean build
+        run: cd examples/custom-pipelines-hello-world && ./gradlew clean build
