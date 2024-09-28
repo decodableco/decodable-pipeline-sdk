@@ -14,7 +14,7 @@ and running them on Decodable as a [custom pipeline](https://docs.decodable.co/d
 
 The following components are required in order to use this SDK:
 
-* Java 11 (note that Java 17 is not supported by Apache Flink yet)
+* Java 11 (note that Java 17 is not supported by Apache Flink 1.16 yet)
 * Docker (for integration tests)
 
 ## Installation

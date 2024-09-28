@@ -60,7 +60,10 @@ metadata:
 spec_version: v2
 spec:
     type: JAVA
+    # When building with Maven
     job_file_path: target/custom-pipelines-hello-world-0.1.jar
+    # When building with Gradle
+    # job_file_path: build/libs/custom-pipelines-hello-world-0.1-all.jar
     properties:
         flink_version: 1.16-java11
     execution:

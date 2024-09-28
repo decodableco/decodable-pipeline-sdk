@@ -1,0 +1,100 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright Decodable, Inc.
+ *
+ * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
+ */
+plugins {
+    id 'application'
+    id 'java'
+    id 'com.gradleup.shadow' version '8.3.2'
+    id 'eclipse'
+}
+
+group = 'co.decodable.examples'
+version = '0.1'
+
+ext {
+    flinkVersion = '1.16.3'
+    log4jVersion = '2.17.1'
+    sdkVersion = '1.0.0-SNAPSHOT'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+application {
+    mainClass = 'co.decodable.examples.cpdemo.DataStreamJob'
+}
+
+dependencies {
+    annotationProcessor "co.decodable:decodable-pipeline-sdk:$sdkVersion"
+
+    implementation "co.decodable:decodable-pipeline-sdk:$sdkVersion"
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+
+    compileOnly "org.apache.flink:flink-streaming-java:$flinkVersion"
+
+    testImplementation "org.apache.flink:flink-clients:$flinkVersion"
+    testImplementation "org.apache.flink:flink-json:$flinkVersion"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+    testImplementation 'org.testcontainers:redpanda:1.18.3'
+    testImplementation 'org.testcontainers:junit-jupiter:1.18.3'
+
+    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+    testImplementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                   'Implementation-Version': project.version)
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+configurations {
+    // compileOnly-scoped dependencies should be excluded from the uber JAR,
+    // but the compileOnly scope is not allowed to be resolved by Gradle.
+    // so we're deriving a configuration from it which we actually can resolve.
+    provided
+    provided.extendsFrom compileOnly
+}
+
+shadowJar {
+  def exclude_modules = project
+            .configurations
+            .provided
+            .resolvedConfiguration
+            .getLenientConfiguration()
+            .getAllModuleDependencies()
+            .collect {
+                it.name
+            }
+    dependencies {
+        // exclude all compileOnly dependencies, including transitives, as
+        // they are provided by Flink already
+        exclude(dependency {
+            exclude_modules.contains(it.name)
+        })
+        // pulled in by kafka-clients, but it's provided by Flink already
+        exclude(dependency('org.slf4j:slf4j-api'))
+    }
+
+    mergeServiceFiles()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    withJavadocJar()
+    withSourcesJar()
+}

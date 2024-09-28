@@ -78,7 +78,7 @@ tasks.withType(Javadoc) {
     options.addStringOption('-snippet-path', sourceSets.test.java.srcDirs.first().getPath())
     options.header = 'Copyright © 2024 <a style="text-transform:none;" href="https://www.decodable.co">Decodable, Inc.</a>; Licensed under the Apache License, version 2.0.'
     javadocTool = javaToolchains.javadocToolFor {
-        languageVersion = JavaLanguageVersion.of(20)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
