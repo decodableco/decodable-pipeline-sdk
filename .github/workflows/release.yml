@@ -34,7 +34,7 @@ jobs:
           distribution: ${{ env.JAVA_DISTRO }}
           java-version: |
              11
-             20
+             21
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2.4.2
@@ -59,6 +59,7 @@ jobs:
           sed -i 's/<version>.*<\/version>/<version>'"$RELEASE_VERSION"'<\/version>/g' README.md
           sed -i 's/implementation \x27co\.decodable:decodable-pipeline-sdk:.*\x27/implementation \x27co.decodable:decodable-pipeline-sdk:'"$RELEASE_VERSION"'\x27/g' README.md
           sed -i 's/<decodable.pipeline.sdk.version>.*<\/decodable.pipeline.sdk.version>/<decodable.pipeline.sdk.version>'"$RELEASE_VERSION"'<\/decodable.pipeline.sdk.version>/g' examples/apache-maven/custom-pipelines-hello-world/pom.xml
+          sed -i 's/sdkVersion = \x27.*\x27/sdkVersion = \x27'"$RELEASE_VERSION"'\x27/g' examples/apache-maven/custom-pipelines-hello-world/build.gradle
 
           git config --global user.email "decodable-release-bot@decodable.co.invalid"
           git config --global user.name "decodable-release-bot"
@@ -74,8 +75,11 @@ jobs:
       - name: Build SDK
         run: cd sdk && ./gradlew build publishToMavenLocal publish
 
-      - name: Build Example Project
+      - name: Build Example Project With Maven
         run: cd examples/apache-maven/custom-pipelines-hello-world && ./mvnw -B clean verify
+
+      - name: Build Example Project With Gradle
+        run: cd examples/apache-maven/custom-pipelines-hello-world && ./gradlew clean buid
 
       - name: Release SDK
         env:

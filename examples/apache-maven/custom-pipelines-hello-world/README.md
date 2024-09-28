@@ -5,13 +5,24 @@ It takes data from one Decodable stream, _purchase-orders_, processes the data (
 
 ## Build
 
-Run the following to build this example project:
+Run the following to build this example project using [Apache Maven](https://maven.apache.org/):
 
 ```bash
 ./mvnw clean verify
 ```
 
+Run the following to build this example project using [Gradle](https://gradle.org/):
+
+```bash
+./gradlew clean build
+```
+
 ## Deployment
+
+Set the `job_file_path` property for the pipeline resource in _decodable-resources.yaml_ depending on your chosen build tool:
+
+* `target/custom-pipelines-hello-world-0.1.jar` when using Maven
+* `build/libs/custom-pipelines-hello-world-0.1-all.jar` when using Gradle
 
 Deploy the example to Decodable using the CLI:
 
