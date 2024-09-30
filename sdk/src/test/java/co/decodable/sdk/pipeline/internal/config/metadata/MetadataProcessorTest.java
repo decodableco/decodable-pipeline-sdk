@@ -146,7 +146,6 @@ public class MetadataProcessorTest {
   }
 
   private static Compilation compile(URL... files) {
-    Arrays.stream(files).map(f -> JavaFileObjects.forResource(f)).collect(Collectors.toSet());
     return Compiler.javac()
         .withProcessors(new MetadataProcessor())
         .compile(
