@@ -8,7 +8,7 @@
 plugins {
     id 'java-library'
     id 'eclipse'
-    id 'com.diffplug.spotless' version '6.8.0'
+    id 'com.diffplug.spotless' version '6.25.0'
     id 'maven-publish'
     id 'org.jreleaser' version '1.10.0'
 }
@@ -61,7 +61,7 @@ spotless {
     java {
         toggleOffOn()
         removeUnusedImports()
-        googleJavaFormat('1.15.0')
+        googleJavaFormat('1.23.0')
         licenseHeader '''/*
  * SPDX-License-Identifier: Apache-2.0
  *
