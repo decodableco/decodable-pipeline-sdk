@@ -26,13 +26,16 @@
  * the source and sink streams accessed by their pipelines. That way, the referenced pipelines can
  * be displayed in the Decodable user interface. In order to do so, add a file named
  * <i>META-INF/decodable/stream-names.properties</i> to your Flink job JAR. Within that file,
- * specify the name(s) of all source and sink streams as comma-separated lists, using the property
- * keys "source-streams" and "sink-streams":
+ * specify the name(s) of all source and sink streams for each job class as comma-separated lists,
+ * using the property keys "&lt;fully-qualified class name&gt;.source-streams" and
+ * &lt;fully-qualified class name&gt;"sink-streams":
  *
  * <p>
  * {@snippet :
-   source-streams=my_source_stream_1,my_source_stream_2
-   sink-streams=my_sink_stream_1,my_sink_stream_2
+   com.example.MyJob.source-streams=my_source_stream_1,my_source_stream_2
+   com.example.MyJob.sink-streams=my_sink_stream_1,my_sink_stream_2
+   com.example.MyOtherJob.source-streams=my_other_source_stream
+   com.example.MyOtherJob.sink-streams=my_other_sink_stream
    }
  * Instead of manually creating this file, it is recommended to generate it automatically, using an
  * annotation processor which ships with this SDK. To do so, specify the stream names using the

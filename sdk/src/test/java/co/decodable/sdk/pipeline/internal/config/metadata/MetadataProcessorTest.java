@@ -21,12 +21,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.tools.StandardLocation;
 import org.junit.jupiter.api.Test;
 
@@ -49,7 +50,8 @@ public class MetadataProcessorTest {
         .generatedFile(StandardLocation.CLASS_OUTPUT, OUTPUT_PATH)
         .hasContents(
             CharSource.wrap(
-                    "source-streams=purchase-orders\nsink-streams=purchase-orders-processed\n")
+                    "co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob.source-streams=purchase-orders\n"
+                        + "co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob.sink-streams=purchase-orders-processed\n")
                 .asByteSource(StandardCharsets.UTF_8));
   }
 
@@ -63,12 +65,12 @@ public class MetadataProcessorTest {
     Compilation compilation = compile(jobFile);
 
     assertThat(compilation).succeeded();
-    var file = compilation.generatedFile(StandardLocation.CLASS_OUTPUT, OUTPUT_PATH).get();
-    var fileContents = file.getCharContent(false).toString();
-    assertThat(fileContents)
-        .endsWith("\nsink-streams=\n")
-        .hasLineCount(2)
-        .containsPattern(Pattern.compile("^source-streams=source[1-2],source[1-2]\\n"));
+    assertThat(compilation)
+        .generatedFile(StandardLocation.CLASS_OUTPUT, OUTPUT_PATH)
+        .hasContents(
+            CharSource.wrap(
+                    "co.decodable.sdk.pipeline.snippets.DummySourcesOnlyJob.source-streams=source1,source2\n")
+                .asByteSource(StandardCharsets.UTF_8));
   }
 
   @Test
@@ -81,12 +83,45 @@ public class MetadataProcessorTest {
     Compilation compilation = compile(jobFile);
 
     assertThat(compilation).succeeded();
+    assertThat(compilation)
+        .generatedFile(StandardLocation.CLASS_OUTPUT, OUTPUT_PATH)
+        .hasContents(
+            CharSource.wrap(
+                    "co.decodable.sdk.pipeline.snippets.DummySinksOnlyJob.sink-streams=sink1,sink2\n")
+                .asByteSource(StandardCharsets.UTF_8));
+  }
+
+  @Test
+  public void shouldGenerateStreamNamesFileForMultipleFiles()
+      throws MalformedURLException, Exception {
+    URL jobFile1 =
+        new File(
+                "./src/test/java/co/decodable/sdk/pipeline/snippets/PurchaseOrderProcessingJob.java")
+            .toURI()
+            .toURL();
+    URL jobFile2 =
+        new File("./src/test/java/co/decodable/sdk/pipeline/snippets/DummySourcesOnlyJob.java")
+            .toURI()
+            .toURL();
+    URL jobFile3 =
+        new File("./src/test/java/co/decodable/sdk/pipeline/snippets/DummySinksOnlyJob.java")
+            .toURI()
+            .toURL();
+    Compilation compilation = compile(jobFile1, jobFile2, jobFile3);
+
+    assertThat(compilation).succeeded();
     var file = compilation.generatedFile(StandardLocation.CLASS_OUTPUT, OUTPUT_PATH).get();
     var fileContents = file.getCharContent(false).toString();
-    assertThat(fileContents)
-        .startsWith("source-streams=\n")
-        .hasLineCount(2)
-        .containsPattern(Pattern.compile("\\nsink-streams=sink[1-2],sink[1-2]$"));
+    System.out.println(fileContents);
+    assertThat(compilation)
+        .generatedFile(StandardLocation.CLASS_OUTPUT, OUTPUT_PATH)
+        .hasContents(
+            CharSource.wrap(
+                    "co.decodable.sdk.pipeline.snippets.DummySinksOnlyJob.sink-streams=sink1,sink2\n"
+                        + "co.decodable.sdk.pipeline.snippets.DummySourcesOnlyJob.source-streams=source1,source2\n"
+                        + "co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob.source-streams=purchase-orders\n"
+                        + "co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob.sink-streams=purchase-orders-processed\n")
+                .asByteSource(StandardCharsets.UTF_8));
   }
 
   @Test
@@ -110,10 +145,13 @@ public class MetadataProcessorTest {
     assertThat(record.getMessage()).contains("Neither source nor sink streams were declared");
   }
 
-  private static Compilation compile(URL fileWithoutAnnotations) {
+  private static Compilation compile(URL... files) {
     return Compiler.javac()
         .withProcessors(new MetadataProcessor())
-        .compile(JavaFileObjects.forResource(fileWithoutAnnotations));
+        .compile(
+            Arrays.stream(files)
+                .map(f -> JavaFileObjects.forResource(f))
+                .collect(Collectors.toSet()));
   }
 
   private static class TestHandler extends Handler {
