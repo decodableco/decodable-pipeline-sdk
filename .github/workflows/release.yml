@@ -79,7 +79,7 @@ jobs:
         run: cd examples/custom-pipelines-hello-world && ./mvnw -B clean verify
 
       - name: Build Example Project With Gradle
-        run: cd examples/custom-pipelines-hello-world && ./gradlew clean buid
+        run: cd examples/custom-pipelines-hello-world && ./gradlew clean build
 
       - name: Release SDK
         env:
