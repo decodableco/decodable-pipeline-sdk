@@ -101,6 +101,7 @@
 				<version>3.13.0</version>
 				<configuration>
 					<release>${target.java.version}</release>
+					<proc>full</proc>
 				</configuration>
 			</plugin>
 			<plugin>
