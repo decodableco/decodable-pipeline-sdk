@@ -101,9 +101,13 @@
 				<version>3.13.0</version>
 				<configuration>
 					<release>${target.java.version}</release>
-					<compilerArgs>
-						<arg>-proc:full</arg>
-					</compilerArgs>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>co.decodable</groupId>
+							<artifactId>decodable-pipeline-sdk</artifactId>
+							<version>${decodable.pipeline.sdk.version}</version>
+						</path>
+					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 			<plugin>
