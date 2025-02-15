@@ -5,8 +5,11 @@
  *
  * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
  */
-package co.decodable.sdk.pipeline;
+package co.decodable.sdk.pipeline.snippets;
 
+import co.decodable.sdk.pipeline.DecodableStreamSink;
+import co.decodable.sdk.pipeline.DecodableStreamSource;
+import co.decodable.sdk.pipeline.PurchaseOrder;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
 import co.decodable.sdk.pipeline.metadata.SourceStreams;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -49,15 +52,13 @@ public class PurchasingOrderProcessingTableAPIJob {
 
     Table inputTable = tableEnv.fromDataStream(stream);
     tableEnv.createTemporaryView("purchase_orders", inputTable);
+
+    // register a UDF
     tableEnv.createTemporarySystemFunction("upper_case", UpperCase.class);
 
     Table resultTable =
         tableEnv.sqlQuery(
             "SELECT id, orderDate, upper_case(customerName), price, productId, orderStatus FROM purchase_orders");
-
-    //        DataStream<Row> resultStream = tableEnv.toDataStream(resultTable);
-    //
-    //        resultStream.print();
 
     DataStream<PurchaseOrder> resultStream =
         tableEnv.toDataStream(

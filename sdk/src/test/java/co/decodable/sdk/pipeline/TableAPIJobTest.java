@@ -9,6 +9,7 @@ package co.decodable.sdk.pipeline;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import co.decodable.sdk.pipeline.snippets.PurchasingOrderProcessingTableAPIJob;
 import co.decodable.sdk.pipeline.testing.PipelineTestContext;
 import co.decodable.sdk.pipeline.testing.StreamRecord;
 import co.decodable.sdk.pipeline.testing.TestEnvironment;
