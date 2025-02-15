@@ -78,4 +78,3 @@ public class TableAPIJobTest {
     }
   } // @end region="custom-pipeline"
 }
-// spotless:on
