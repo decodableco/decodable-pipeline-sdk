@@ -41,15 +41,21 @@ public class PurchasingOrderProcessingTableAPIJob {
             .withStreamName(PURCHASE_ORDERS_STREAM)
             .withDeserializationSchema(new JsonDeserializationSchema<>(PurchaseOrder.class))
             .build();
-
-    // @end
+    DecodableStreamSink<PurchaseOrder> sink =
+        DecodableStreamSink.<PurchaseOrder>builder()
+            .withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
+            .withSerializationSchema(new JsonSerializationSchema<>())
+            .build();
 
     DataStream<PurchaseOrder> stream =
         env.fromSource(
             source,
             WatermarkStrategy.noWatermarks(),
             "[stream-purchase-orders] Purchase Orders Source");
+    // @end
 
+    // TODO: map the fields in PurchaseOrder stream to `purchase_orders` table
+    // tableEnv.fromDataStream(stream).as(...) assumes a specific order of the fields
     Table inputTable = tableEnv.fromDataStream(stream);
     tableEnv.createTemporaryView("purchase_orders", inputTable);
 
@@ -71,11 +77,7 @@ public class PurchasingOrderProcessingTableAPIJob {
                 DataTypes.FIELD("price", DataTypes.DOUBLE()),
                 DataTypes.FIELD("productId", DataTypes.BIGINT()),
                 DataTypes.FIELD("orderStatus", DataTypes.BOOLEAN())));
-    DecodableStreamSink<PurchaseOrder> sink =
-        DecodableStreamSink.<PurchaseOrder>builder()
-            .withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
-            .withSerializationSchema(new JsonSerializationSchema<>())
-            .build();
+
     resultStream.sinkTo(sink).name("[stream-purchase-orders-processed] Purchase Orders Sink");
 
     env.execute("Purchase Order Processor");
