@@ -12,16 +12,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import co.decodable.sdk.pipeline.testing.PipelineTestContext;
 import co.decodable.sdk.pipeline.testing.StreamRecord;
 import co.decodable.sdk.pipeline.testing.TestEnvironment;
+import co.decodable.sdk.pipeline.testing.PipelineTestContext.ThrowingConsumer;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.redpanda.RedpandaContainer;
 
 @Testcontainers
-public class TableAPIJobTest {
+public class JobTests {
 
   static final String PURCHASE_ORDERS = "purchase-orders";
   static final String PURCHASE_ORDERS_PROCESSED = "purchase-orders-processed";
@@ -32,8 +39,10 @@ public class TableAPIJobTest {
   public RedpandaContainer broker =
       new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.2");
 
-  @Test
-  public void shouldUpperCaseCustomerName() throws Exception {
+  @DisplayName("Test Example Jobs for DataStream and Table API")
+  @ParameterizedTest(name = "[{index}] running test for {0}")
+  @MethodSource("provideJobEntryPoints")
+  public void shouldUpperCaseCustomerName(String jobName, ThrowingConsumer<String[]> mainMethod) throws Exception {
     TestEnvironment testEnvironment =
         TestEnvironment.builder()
             .withBootstrapServers(broker.getBootstrapServers())
@@ -64,7 +73,7 @@ public class TableAPIJobTest {
       ctx.stream(PURCHASE_ORDERS).add(new StreamRecord<>(value));
       ctx.stream(PURCHASE_ORDERS).add(new StreamRecord<>(value2));
 
-      ctx.runJobAsync(TableAPIJob::main);
+      ctx.runJobAsync(mainMethod);
 
       StreamRecord<String> result =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
@@ -77,6 +86,13 @@ public class TableAPIJobTest {
       assertThat(purchaseOrder.get("customer_name").asText()).isEqualTo("YOLANDA HAGENES");
       assertThat(purchaseOrder2.get("customer_name").asText()).isEqualTo("ERWIN MAUSEPETER");
     }
+  }
+
+  static Stream<Arguments> provideJobEntryPoints() {
+    return Stream.of(
+      Arguments.of(DataStreamJob.class.getSimpleName(),(ThrowingConsumer<String[]>)DataStreamJob::main),
+      Arguments.of(TableAPIJob.class.getSimpleName(),(ThrowingConsumer<String[]>)TableAPIJob::main)
+    );
   }
 
 }
