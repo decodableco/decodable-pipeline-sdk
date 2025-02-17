@@ -5,11 +5,10 @@
  *
  * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
  */
-package co.decodable.sdk.pipeline.snippets;
+package co.decodable.examples.cpdemo;
 
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
-import co.decodable.sdk.pipeline.PurchaseOrder;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
 import co.decodable.sdk.pipeline.metadata.SourceStreams;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -20,14 +19,14 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.annotation.DataTypeHint;
 import org.apache.flink.table.annotation.FunctionHint;
 import org.apache.flink.table.api.DataTypes;
+import org.apache.flink.table.api.Schema;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.functions.ScalarFunction;
 
-@SourceStreams(
-    PurchasingOrderProcessingTableAPIJob.PURCHASE_ORDERS_STREAM) // @start region="custom-pipeline"
-@SinkStreams(PurchasingOrderProcessingTableAPIJob.PURCHASE_ORDERS_PROCESSED_STREAM)
-public class PurchasingOrderProcessingTableAPIJob {
+@SourceStreams(TableAPIJob.PURCHASE_ORDERS_STREAM)
+@SinkStreams(TableAPIJob.PURCHASE_ORDERS_PROCESSED_STREAM)
+public class TableAPIJob {
   static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
   static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
 
@@ -35,7 +34,6 @@ public class PurchasingOrderProcessingTableAPIJob {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
 
-    // @highlight region regex=".*"
     DecodableStreamSource<PurchaseOrder> source =
         DecodableStreamSource.<PurchaseOrder>builder()
             .withStreamName(PURCHASE_ORDERS_STREAM)
@@ -52,26 +50,34 @@ public class PurchasingOrderProcessingTableAPIJob {
             source,
             WatermarkStrategy.noWatermarks(),
             "[stream-purchase-orders] Purchase Orders Source");
-    // @end
 
-    // TODO: map the fields in PurchaseOrder stream to `purchase_orders` table
-    // tableEnv.fromDataStream(stream).as(...) assumes a specific order of the fields
-    Table inputTable = tableEnv.fromDataStream(stream);
+    Table inputTable = tableEnv.fromDataStream(
+        stream,
+        Schema.newBuilder()
+          .column("orderId", DataTypes.BIGINT())
+          .column("orderDate", DataTypes.STRING())
+          .column("customerName", DataTypes.STRING())
+          .column("price", DataTypes.DOUBLE())
+          .column("productId", DataTypes.BIGINT())
+          .column("orderStatus", DataTypes.BOOLEAN())
+        .build()
+    );
+    
     tableEnv.createTemporaryView("purchase_orders", inputTable);
-
+    
     // register a UDF
     tableEnv.createTemporarySystemFunction("upper_case", UpperCase.class);
 
     Table resultTable =
         tableEnv.sqlQuery(
-            "SELECT id, orderDate, upper_case(customerName), price, productId, orderStatus FROM purchase_orders");
+            "SELECT orderId, orderDate, upper_case(customerName) AS customerName, price, productId, orderStatus FROM purchase_orders");
 
     DataStream<PurchaseOrder> resultStream =
         tableEnv.toDataStream(
             resultTable,
             DataTypes.STRUCTURED(
                 PurchaseOrder.class,
-                DataTypes.FIELD("id", DataTypes.BIGINT()),
+                DataTypes.FIELD("orderId", DataTypes.BIGINT()),
                 DataTypes.FIELD("orderDate", DataTypes.STRING()),
                 DataTypes.FIELD("customerName", DataTypes.STRING()),
                 DataTypes.FIELD("price", DataTypes.DOUBLE()),

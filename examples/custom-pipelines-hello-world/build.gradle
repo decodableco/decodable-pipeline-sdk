@@ -13,7 +13,7 @@ plugins {
 }
 
 group = 'co.decodable.examples'
-version = '0.1'
+version = '0.2'
 
 ext {
     flinkVersion = '1.16.3'
@@ -35,10 +35,21 @@ dependencies {
 
     implementation "co.decodable:decodable-pipeline-sdk:$sdkVersion"
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation "org.apache.flink:flink-json:$flinkVersion"
 
     compileOnly "org.apache.flink:flink-streaming-java:$flinkVersion"
+    compileOnly "org.apache.flink:flink-table-api-java:$flinkVersion"
+    compileOnly "org.apache.flink:flink-table-api-java-bridge:$flinkVersion"
+    compileOnly "org.apache.flink:flink-table-planner_2.12:$flinkVersion"
+    compileOnly "org.apache.flink:flink-table-common:$flinkVersion"
+    compileOnly "org.apache.flink:flink-table-runtime:$flinkVersion"
 
     testImplementation "org.apache.flink:flink-clients:$flinkVersion"
+    testImplementation "org.apache.flink:flink-table-api-java:$flinkVersion"
+    testImplementation "org.apache.flink:flink-table-api-java-bridge:$flinkVersion"
+    testImplementation "org.apache.flink:flink-table-planner_2.12:$flinkVersion"
+    testImplementation "org.apache.flink:flink-table-common:$flinkVersion"
+    testImplementation "org.apache.flink:flink-table-runtime:$flinkVersion"
     testImplementation "org.apache.flink:flink-json:$flinkVersion"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
     testImplementation 'org.testcontainers:redpanda:1.18.3'

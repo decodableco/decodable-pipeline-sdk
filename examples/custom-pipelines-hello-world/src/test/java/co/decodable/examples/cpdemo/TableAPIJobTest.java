@@ -5,11 +5,10 @@
  *
  * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
  */
-package co.decodable.sdk.pipeline;
+package co.decodable.examples.cpdemo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import co.decodable.sdk.pipeline.snippets.PurchasingOrderProcessingTableAPIJob;
 import co.decodable.sdk.pipeline.testing.PipelineTestContext;
 import co.decodable.sdk.pipeline.testing.StreamRecord;
 import co.decodable.sdk.pipeline.testing.TestEnvironment;
@@ -21,18 +20,20 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.redpanda.RedpandaContainer;
 
-@Testcontainers // @start region="testing-custom-pipeline"
+@Testcontainers
 public class TableAPIJobTest {
 
   static final String PURCHASE_ORDERS = "purchase-orders";
   static final String PURCHASE_ORDERS_PROCESSED = "purchase-orders-processed";
+
+  static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @Container
   public RedpandaContainer broker =
       new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.2");
 
   @Test
-  public void runTest() throws Exception {
+  public void shouldUpperCaseCustomerName() throws Exception {
     TestEnvironment testEnvironment =
         TestEnvironment.builder()
             .withBootstrapServers(broker.getBootstrapServers())
@@ -63,18 +64,19 @@ public class TableAPIJobTest {
       ctx.stream(PURCHASE_ORDERS).add(new StreamRecord<>(value));
       ctx.stream(PURCHASE_ORDERS).add(new StreamRecord<>(value2));
 
-      ctx.runJobAsync(PurchasingOrderProcessingTableAPIJob::main);
+      ctx.runJobAsync(TableAPIJob::main);
 
       StreamRecord<String> result =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
       StreamRecord<String> result2 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
-      ObjectNode purchaseOrder = (ObjectNode) new ObjectMapper().readTree(result.value());
-      ObjectNode purchaseOrder2 = (ObjectNode) new ObjectMapper().readTree(result2.value());
+      ObjectNode purchaseOrder = (ObjectNode) OBJECT_MAPPER.readTree(result.value());
+      ObjectNode purchaseOrder2 = (ObjectNode) OBJECT_MAPPER.readTree(result2.value());
 
       // then
       assertThat(purchaseOrder.get("customer_name").asText()).isEqualTo("YOLANDA HAGENES");
       assertThat(purchaseOrder2.get("customer_name").asText()).isEqualTo("ERWIN MAUSEPETER");
     }
-  } // @end region="custom-pipeline"
+  }
+
 }
