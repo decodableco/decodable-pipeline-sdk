@@ -3,6 +3,9 @@ kind: secret
 metadata:
   name: api-key-secret
   description: API Key for purchase orders REST source
+  tags:
+    team: eng
+    example: sdk-pipelines  
 spec_version: v1
 spec:
   value_literal: "my very secret API key"
@@ -11,6 +14,9 @@ kind: connection
 metadata:
   name: purchase-orders-source
   description: A REST source for purchase orders
+  tags:
+    team: eng
+    example: sdk-pipelines  
 spec_version: v2
 spec:
   connector: rest
@@ -23,47 +29,109 @@ spec:
   schema_v2:
     fields:
       - kind: physical
+        name: order_id
+        type: bigint
+      - kind: physical
+        name: order_date
+        type: string
+      - kind: physical
         name: customer_name
         type: string
+      - kind: physical
+        name: price
+        type: double
+      - kind: physical
+        name: product_id
+        type: bigint
+      - kind: physical
+        name: order_status
+        type: boolean
   execution:
     active: true
     task_count: 1
-    task_size: M
+    task_size: S
 ---
 kind: stream
 metadata:
   name: purchase-orders
   description: Purchase order data
+  tags:
+    team: eng
+    example: sdk-pipelines  
 spec_version: v1
 spec:
   schema_v2:
     fields:
       - kind: physical
+        name: order_id
+        type: bigint
+      - kind: physical
+        name: order_date
+        type: string
+      - kind: physical
         name: customer_name
         type: string
+      - kind: physical
+        name: price
+        type: double
+      - kind: physical
+        name: product_id
+        type: bigint
+      - kind: physical
+        name: order_status
+        type: boolean
 ---
 kind: stream
 metadata:
   name: purchase-orders-processed
   description: Processed purchase order data
+  tags:
+    team: eng
+    example: sdk-pipelines  
 spec_version: v1
 spec:
   schema_v2:
     fields:
       - kind: physical
+        name: order_id
+        type: bigint
+      - kind: physical
+        name: order_date
+        type: string
+      - kind: physical
         name: customer_name
         type: string
+      - kind: physical
+        name: price
+        type: double
+      - kind: physical
+        name: product_id
+        type: bigint
+      - kind: physical
+        name: order_status
+        type: boolean
 ---
+# Custom pipeline running the DataStreamJob
 kind: pipeline
 metadata:
-    name: customer-processor
+  name: customer-processor
+  tags:
+    team: eng
+    example: sdk-pipelines  
 spec_version: v2
 spec:
     type: JAVA
+    
     # When building with Maven
-    job_file_path: target/custom-pipelines-hello-world-0.1.jar
+    job_file_path: target/custom-pipelines-hello-world-0.2.jar
     # When building with Gradle
-    # job_file_path: build/libs/custom-pipelines-hello-world-0.1-all.jar
+    # job_file_path: build/libs/custom-pipelines-hello-world-0.2-all.jar
+    
+    # When running the DataStream API Job
+    entry_class: co.decodable.examples.cpdemo.DataStreamJob
+    # When running the Table API Job
+    # entry_class: co.decodable.examples.cpdemo.TableAPIJob
+    
     properties:
         flink_version: 1.16-java11
     execution:

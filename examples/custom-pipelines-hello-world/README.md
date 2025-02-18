@@ -3,6 +3,11 @@
 This is a simple Flink job which uses the Decodable Custom Pipelines SDK.
 It takes data from one Decodable stream, _purchase-orders_, processes the data (simply upper-casing the customer name of each purchase order record), and writes the modified records to another stream, _purchase\_order\_processed_.
 
+The job is implemented twice, showing two different flavours:
+
+* **[DataStreamJob.java](./src/main/java/co/decodable/examples/cpdemo/DataStreamJob.java)** (using Flink's DataStream API)
+* **[TableAPIJob.java](./src/main/java/co/decodable/examples/cpdemo/TableAPIJob.java)** (using Flink's Table API)
+
 ## Build
 
 Run the following to build this example project using [Apache Maven](https://maven.apache.org/):
