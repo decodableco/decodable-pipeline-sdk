@@ -5,9 +5,26 @@
  *
  * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
  */
-plugins {
-    // Apply the foojay-resolver plugin to allow automatic download of JDKs
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.4.0'
+
+ pluginManagement {
+    
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+
+    plugins {
+        // Apply the foojay-resolver plugin to allow automatic download of JDKs
+        id 'org.gradle.toolchains.foojay-resolver-convention' version '0.4.0'
+        
+        id 'java-library'
+        id 'eclipse'
+        id 'com.diffplug.spotless' version '6.25.0'
+        id 'maven-publish'
+        id 'org.jreleaser' version '1.10.0'
+    }
+
 }
 
 rootProject.name = 'decodable-pipeline-sdk'
+include 'flink-1.16', 'flink-1.18', 'flink-1.19', 'flink-1.20'

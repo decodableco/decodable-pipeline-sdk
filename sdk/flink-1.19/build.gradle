@@ -8,25 +8,22 @@
 plugins {
     id 'java-library'
     id 'eclipse'
-    id 'com.diffplug.spotless' version '6.25.0'
+    id 'com.diffplug.spotless'
     id 'maven-publish'
-    id 'org.jreleaser' version '1.10.0'
+    id 'org.jreleaser'
 }
 
 group = 'co.decodable'
-
-repositories {
-    mavenCentral()
-}
+archivesBaseName = "${rootProject.name}"
 
 dependencies {
-    def flinkVersion = '1.18.1'
+    def flinkVersion = '1.19.2'
 
     api "org.apache.flink:flink-core:$flinkVersion"
     //NOTE: flink-connector-base is needed as of Flink 1.18
     implementation "org.apache.flink:flink-connector-base:$flinkVersion"
     //NOTE: flink-connector-kafka released with different versioning schema starting with Flink 1.18
-    implementation "org.apache.flink:flink-connector-kafka:3.2.0-1.18"
+    implementation "org.apache.flink:flink-connector-kafka:3.3.0-1.19"
     implementation "org.apache.flink:flink-streaming-java:$flinkVersion"
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'software.amazon.msk:aws-msk-iam-auth:1.1.6'
