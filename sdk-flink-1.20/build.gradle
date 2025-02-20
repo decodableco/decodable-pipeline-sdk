@@ -1,0 +1,216 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright Decodable, Inc.
+ *
+ * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
+ */
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'com.diffplug.spotless' version '6.25.0'
+    id 'maven-publish'
+    id 'org.jreleaser' version '1.10.0'
+}
+
+group = 'co.decodable'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    def flinkVersion = '1.20.1'
+
+    api "org.apache.flink:flink-core:$flinkVersion"
+    //NOTE: flink-connector-base is needed as of Flink 1.18
+    implementation "org.apache.flink:flink-connector-base:$flinkVersion"
+    //NOTE: flink-connector-kafka released with different versioning schema starting with Flink 1.18
+    implementation "org.apache.flink:flink-connector-kafka:3.4.0-1.20"
+    implementation "org.apache.flink:flink-streaming-java:$flinkVersion"
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'software.amazon.msk:aws-msk-iam-auth:1.1.6'
+
+    testImplementation "org.apache.flink:flink-clients:$flinkVersion"
+    testImplementation "org.apache.flink:flink-table-api-java:$flinkVersion"
+    testImplementation "org.apache.flink:flink-table-api-java-bridge:$flinkVersion"
+    testImplementation "org.apache.flink:flink-table-planner_2.12:$flinkVersion"
+    testImplementation "org.apache.flink:flink-table-common:$flinkVersion"
+    testImplementation "org.apache.flink:flink-table-runtime:$flinkVersion"
+    testImplementation "org.apache.flink:flink-json:$flinkVersion"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+    testImplementation 'org.testcontainers:redpanda:1.18.3'
+    testImplementation 'org.testcontainers:junit-jupiter:1.18.3'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'com.google.testing.compile:compile-testing:0.21.0'
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                   'Implementation-Version': project.version)
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform() 
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+spotless {
+    java {
+        toggleOffOn()
+        removeUnusedImports()
+        googleJavaFormat('1.23.0')
+        licenseHeader '''/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright Decodable, Inc.
+ *
+ * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
+ */'''
+    }
+}
+
+tasks.withType(Javadoc) {
+    title "Decodable Pipeline SDK ${project.version}"
+    exclude 'co/decodable/sdk/pipeline/internal'
+    options.addStringOption('-snippet-path', sourceSets.test.java.srcDirs.first().getPath())
+    options.header = 'Copyright © 2024 <a style="text-transform:none;" href="https://www.decodable.co">Decodable, Inc.</a>; Licensed under the Apache License, version 2.0.'
+    javadocTool = javaToolchains.javadocToolFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+
+            pom {
+                name = 'Decodable Pipeline SDK'
+                description = 'A software development kit for implementing Apache Flink jobs and running them on Decodable'
+                url = 'https://github.com/decodableco/decodable-pipeline-sdk'
+                inceptionYear = '2023'
+                licenses {
+                    license {
+                        name = 'Apache-2.0'
+                        url = 'https://spdx.org/licenses/Apache-2.0.html'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'gunnarmorling'
+                        name = 'Gunnar Morling'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/decodableco/decodable-pipeline-sdk.git'
+                    developerConnection = 'scm:git:ssh://github.com/decodableco/decodable-pipeline-sdk.git'
+                    url = 'https://github.com/decodableco/decodable-pipeline-sdk'
+                }
+            }
+
+            pom.withXml {
+                asNode().dependencies.'*'.each() {
+                    if (it.artifactId.text() == 'flink-core' || it.artifactId.text() == 'flink-streaming-java') {
+                        it.scope*.value = 'provided'
+                    }
+                    else if (it.artifactId.text() == 'flink-connector-kafka') {
+                        it.scope*.value = 'compile'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
+    }
+}
+
+jreleaser {
+    project {
+        versionPattern = 'CUSTOM'
+    }
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    gitRootSearch = true
+    deploy {
+        maven {
+            nexus2 {
+                'maven-central' {
+                    active = 'ALWAYS'
+                    url = 'https://s01.oss.sonatype.org/service/local'
+                    snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots'
+                    closeRepository = true
+                    releaseRepository = true
+                    stagingRepository('build/staging-deploy')
+                }
+            }
+        }
+    }
+    release {
+        github {
+            issues {
+                enabled = true
+                applyMilestone = 'ALWAYS'
+            }
+            changelog {
+                formatted = 'ALWAYS'
+                format = '- {{commitShortHash}} {{commitTitle}}'
+                labeler {
+                    label = 'feature'
+                    title = 'regex:.*#[0-9] feat: .*'
+                }
+                labeler {
+                    label = 'issue'
+                    title = 'regex:.*#[0-9] fix: .*'
+                }
+                labeler {
+                    label = 'task'
+                    title = 'regex:.*#[0-9] chore: .*'
+                }
+                labeler {
+                    label = 'task'
+                    title = 'regex:.*Bump.*'
+                }
+                category {
+                    title = '🚀 Features'
+                    key = 'features'
+                    labels = ['feature']
+                }
+                category {
+                    title = '✅ Issues'
+                    key = 'issues'
+                    labels = ['issue']
+                }
+                category {
+                    title = '🧰 Tasks'
+                    key = 'tasks'
+                    labels = ['task']
+                }
+                category {
+                    title = '⚙️  ️Dependencies'
+                    key = 'dependencies'
+                    labels = ['dependency']
+                }
+                hide {
+                    contributors = ['GitHub', 'decodable-release-bot']
+                }
+            }
+        }
+    }
+}

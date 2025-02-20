@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        value: [flink-1.16,flink-1.18,flink-1.19]
+        value: [flink-1.16,flink-1.18,flink-1.19,flink-1.20]
 
     steps:
       - name: 'Check out repository'
