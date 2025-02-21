@@ -14,6 +14,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        value: [flink-1.16,flink-1.18,flink-1.19,flink-1.20]
+
     steps:
       - name: 'Check out repository'
         uses: actions/checkout@v3
@@ -41,13 +45,17 @@ jobs:
         id: version
         run: |
           RELEASE_VERSION="1.0.0.ci"
+          FLINK_VERSION=`cd sdk/${{ matrix.value }} && grep "def flinkVersion" build.gradle | sed "s/.*'\([0-9.]*\)'.*/\1/"`
+          
+          echo "version=$FLINK_VERSION-$RELEASE_VERSION" > sdk/${{ matrix.value }}/gradle.properties
+          sed -i 's/<decodable.pipeline.sdk.version>.*<\/decodable.pipeline.sdk.version>/<decodable.pipeline.sdk.version>'"$FLINK_VERSION-$RELEASE_VERSION"'<\/decodable.pipeline.sdk.version>/g' examples/custom-pipelines-hello-world/pom.xml
+          sed -i 's/sdkVersion = \x27.*\x27/sdkVersion = \x27'"$FLINK_VERSION-$RELEASE_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
 
-          echo "version=$RELEASE_VERSION" > sdk/gradle.properties
-          sed -i 's/<decodable.pipeline.sdk.version>.*<\/decodable.pipeline.sdk.version>/<decodable.pipeline.sdk.version>'"$RELEASE_VERSION"'<\/decodable.pipeline.sdk.version>/g' examples/custom-pipelines-hello-world/pom.xml
-          sed -i 's/sdkVersion = \x27.*\x27/sdkVersion = \x27'"$RELEASE_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
+          sed -i 's/<flink.version>.*<\/flink.version>/<flink.version>'"$FLINK_VERSION"'<\/flink.version>/g' examples/custom-pipelines-hello-world/pom.xml
+          sed -i 's/flinkVersion = \x27.*\x27/flinkVersion = \x27'"$FLINK_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
 
       - name: Build SDK
-        run: cd sdk && ./gradlew build publishToMavenLocal
+        run: cd sdk/${{ matrix.value }} && ../gradlew build publishToMavenLocal
 
       - name: Build example project with Maven
         run: cd examples/custom-pipelines-hello-world && ./mvnw -B clean verify
