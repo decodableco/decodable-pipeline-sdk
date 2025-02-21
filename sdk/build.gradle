@@ -15,6 +15,7 @@ plugins {
 }
 
 allprojects {
+    group='co.decodable'
     repositories {
         mavenCentral()
     }
@@ -49,7 +50,7 @@ subprojects {
     publishing {
         publications {
             maven(MavenPublication) {
-                groupId = 'co.decodable'
+                groupId = "${group}"
                 artifactId = "${rootProject.name}"
                 version = "${version}"
                 
@@ -127,14 +128,17 @@ tasks.register('jar') {
 }
 
 jreleaser {
+    gitRootSearch = true
     project {
         versionPattern = 'CUSTOM'
+        java {
+            groupId = "${group}"
+        }
     }
     signing {
         active = 'ALWAYS'
         armored = true
     }
-    gitRootSearch = true
     deploy {
         maven {
             nexus2 {
@@ -144,11 +148,18 @@ jreleaser {
                     snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots'
                     closeRepository = true
                     releaseRepository = true
-                    stagingRepository('build/staging-deploy')
+                    sign = true
+                    //NOTE: staging repositories added dynamically see below
                 }
             }
         }
     }
+
+    // adding all staging-deploy directories from subprojects
+    subprojects.each { p ->
+        jreleaser.deploy.maven.nexus2.'maven-central'.stagingRepository("${p.buildDir}/staging-deploy")
+    }
+
     release {
         github {
             issues {
