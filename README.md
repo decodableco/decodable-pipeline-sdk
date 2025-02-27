@@ -1,6 +1,6 @@
 # Decodable Pipeline SDK
 
-_Version 1.0.0.Beta7_
+_Version 1.0.0.Alpha2_
 
 This repository contains a software development kit (SDK) for implementing [Apache Flink](https://flink.apache.org/) jobs
 and running them on Decodable as a [custom pipeline](https://docs.decodable.co/docs/create-pipelines-using-your-own-apache-flink-jobs).
@@ -14,7 +14,7 @@ and running them on Decodable as a [custom pipeline](https://docs.decodable.co/d
 
 The following components are required in order to use this SDK:
 
-* Java 11 (note that Java 17 is not supported by Apache Flink 1.16 yet)
+* Java 11
 * Docker (for integration tests)
 
 ## Installation
@@ -27,7 +27,7 @@ Add the SDK dependency to the _pom.xml_ of your Maven project:
 <dependency>
   <groupId>co.decodable</groupId>
   <artifactId>decodable-pipeline-sdk</artifactId>
-  <version>1.0.0.Beta7</version>
+  <version>{FLINK_VERSION}-1.0.0.Alpha2</version>
 </dependency>
 ...
 ```
@@ -36,7 +36,7 @@ Or, to your _build.gradle_ when using Gradle:
 
 ```
 ...
-implementation 'co.decodable:decodable-pipeline-sdk:1.0.0.Beta7'
+implementation 'co.decodable:decodable-pipeline-sdk:{FLINK_VERSION}-1.0.0.Alpha2'
 ...
 ```
 
@@ -45,7 +45,7 @@ implementation 'co.decodable:decodable-pipeline-sdk:1.0.0.Beta7'
 See the project under _examples/custom-pipelines-hello-world/_ for a complete example project
 which shows how to use the Decodable SDK for implementing and testing Flink jobs to be executed as custom pipelines on Decodable.
 
-Refer to the [API documentation](https://docs.decodable.co/api/pipeline-sdk.html) to learn how to use this SDK for implement your custom Flink jobs.
+Refer to the [API documentation](https://docs.decodable.co/api/pipeline-sdk.html) to learn how to use this SDK for implementing your custom Flink jobs.
 
 Refer to the [documentation](https://docs.decodable.co/docs/create-pipelines-using-your-own-apache-flink-jobs) for instructions on how to deploy your job as a custom pipeline on the Decodable platform.
 
