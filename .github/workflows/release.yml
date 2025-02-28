@@ -23,6 +23,7 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
         with:
@@ -39,47 +40,74 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2.4.2
 
-      - name: Set Release Version
+      - name: Init Flink Versions for SDK release builds
+        run: |
+          PREFIX="flink-"
+          SUBPROJECTS=$(cd sdk && find . -mindepth 1 -maxdepth 1 -type d -name "${PREFIX}*" -exec basename {} \; | sort | jq -R . | jq -s . | jq -c .)
+          echo "SUBPROJECTS=$SUBPROJECTS" >> $GITHUB_ENV
+          #echo SUBPROJECTS='["flink-1.16"]' >> $GITHUB_ENV
+
+      - name: Set Release and Patch Versions
         id: version
         run: |
-          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
-          RELEASE_BRANCH="release-${{ github.event.inputs.version }}"
-          RELEASE_VERSION=${{ github.event.inputs.version }}
-          NEXT_VERSION=${{ github.event.inputs.next }}
-          PLAIN_VERSION=`echo ${RELEASE_VERSION} | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)/) { print substr($0, RSTART, RLENGTH); }'`
-          COMPUTED_NEXT_VERSION="${PLAIN_VERSION}-SNAPSHOT"
-          if [ -z $NEXT_VERSION ]
-          then
-            NEXT_VERSION=$COMPUTED_NEXT_VERSION
-          fi
+            BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+            RELEASE_BRANCH="release-${{ github.event.inputs.version }}"
+            RELEASE_VERSION=${{ github.event.inputs.version }}
+            NEXT_VERSION=${{ github.event.inputs.next }}
+            PLAIN_VERSION=`echo ${RELEASE_VERSION} | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)/) { print substr($0, RSTART, RLENGTH); }'`
+            COMPUTED_NEXT_VERSION="${PLAIN_VERSION}-SNAPSHOT"
+            if [ -z $NEXT_VERSION ]
+            then
+                NEXT_VERSION=$COMPUTED_NEXT_VERSION
+            fi
 
-          git checkout -b $RELEASE_BRANCH
-          echo "version=$RELEASE_VERSION" > sdk/gradle.properties
-          sed -i 's/^_Version\s.*$/_Version '"$RELEASE_VERSION"'_/g' README.md
-          sed -i 's/<version>.*<\/version>/<version>'"$RELEASE_VERSION"'<\/version>/g' README.md
-          sed -i 's/implementation \x27co\.decodable:decodable-pipeline-sdk:.*\x27/implementation \x27co.decodable:decodable-pipeline-sdk:'"$RELEASE_VERSION"'\x27/g' README.md
-          sed -i 's/<decodable.pipeline.sdk.version>.*<\/decodable.pipeline.sdk.version>/<decodable.pipeline.sdk.version>'"$RELEASE_VERSION"'<\/decodable.pipeline.sdk.version>/g' examples/custom-pipelines-hello-world/pom.xml
-          sed -i 's/sdkVersion = \x27.*\x27/sdkVersion = \x27'"$RELEASE_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
+            git checkout -b $RELEASE_BRANCH
+            
+            echo "patching sdk version and README for release version $RELEASE_VERSION"
+            sed -i "0,/version='[^']*'/s//version='$RELEASE_VERSION'/" sdk/build.gradle
+            sed -i 's/^_Version\s.*$/_Version '"$RELEASE_VERSION"'_/g' README.md
+            sed -i 's/<version>{FLINK_VERSION}-.*<\/version>/<version>{FLINK_VERSION}-'"$RELEASE_VERSION"'<\/version>/g' README.md
+            sed -i 's/implementation \x27co\.decodable:decodable-pipeline-sdk:{FLINK_VERSION}-.*\x27/implementation \x27co.decodable:decodable-pipeline-sdk:{FLINK_VERSION}-'"$RELEASE_VERSION"'\x27/g' README.md
 
-          git config --global user.email "decodable-release-bot@decodable.co.invalid"
-          git config --global user.name "decodable-release-bot"
-          git commit -a -m "Releasing version $RELEASE_VERSION"
-          git push origin $RELEASE_BRANCH
-
-          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
-          echo "RELEASE_BRANCH=$RELEASE_BRANCH" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
-          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
-          echo "PLAIN_VERSION=$PLAIN_VERSION" >> $GITHUB_ENV
+            echo "$SUBPROJECTS" | jq -r '.[]' | while read flink; do
+                FLINK_VERSION=`cd sdk/$flink && grep "def flinkVersion" build.gradle | sed "s/.*'\([0-9.]*\)'.*/\1/"`
+                echo "patching sdk release version $RELEASE_VERSION for flink $FLINK_VERSION"
+                echo "version=$FLINK_VERSION-$RELEASE_VERSION" > sdk/$flink/gradle.properties
+            done
+            
+            echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+            echo "RELEASE_BRANCH=$RELEASE_BRANCH" >> $GITHUB_ENV
+            echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+            echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+            echo "PLAIN_VERSION=$PLAIN_VERSION" >> $GITHUB_ENV
 
       - name: Build SDK
         run: cd sdk && ./gradlew build publishToMavenLocal publish
 
-      - name: Build Example Project With Maven
-        run: cd examples/custom-pipelines-hello-world && ./mvnw -B clean verify
+      - name: Build Example Project With Maven & Gradle
+        run: |
+            workingDir=`pwd`
+            echo "$SUBPROJECTS" | jq -r '.[]' | while read flink; do
+                FLINK_VERSION=`cd sdk/$flink && grep "def flinkVersion" build.gradle | sed "s/.*'\([0-9.]*\)'.*/\1/"`
+                    
+                ### patch example's dependencies for maven and gradle builds
+                sed -i 's/<decodable.pipeline.sdk.version>.*<\/decodable.pipeline.sdk.version>/<decodable.pipeline.sdk.version>'"$FLINK_VERSION-$RELEASE_VERSION"'<\/decodable.pipeline.sdk.version>/g' examples/custom-pipelines-hello-world/pom.xml
+                sed -i 's/<flink.version>.*<\/flink.version>/<flink.version>'"$FLINK_VERSION"'<\/flink.version>/g' examples/custom-pipelines-hello-world/pom.xml
+                sed -i 's/sdkVersion = \x27.*\x27/sdkVersion = \x27'"$FLINK_VERSION-$RELEASE_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
+                sed -i 's/flinkVersion = \x27.*\x27/flinkVersion = \x27'"$FLINK_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
 
-      - name: Build Example Project With Gradle
-        run: cd examples/custom-pipelines-hello-world && ./gradlew clean build
+                echo "building and testing examples project with Maven using sdk $RELEASE_VERSION for flink $FLINK_VERSION"
+                cd examples/custom-pipelines-hello-world && ./mvnw -B clean verify
+                cd $workingDir
+                echo "building and testing examples project with Gradle using sdk $RELEASE_VERSION for flink $FLINK_VERSION"
+                cd examples/custom-pipelines-hello-world && ./gradlew clean build
+                cd $workingDir
+            done
+
+            git config --global user.email "decodable-release-bot@decodable.co.invalid"
+            git config --global user.name "decodable-release-bot"
+            git commit -a -m "Releasing version $RELEASE_VERSION"
+            git push origin $RELEASE_BRANCH
 
       - name: Release SDK
         env:
@@ -91,13 +119,17 @@ jobs:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_BRANCH: ${{ env.RELEASE_BRANCH }}
         run: |
-          cd sdk && ./gradlew jreleaserConfig jreleaserFullRelease
+          cd sdk/ && ./gradlew jreleaserConfig jreleaserFullRelease
 
       - name: Prepare API Docs Publication
         run: |
-          mkdir -p sdk/build/docs/decodable-pipeline-sdk/api-docs
-          mv sdk/build/docs/javadoc sdk/build/docs/decodable-pipeline-sdk/api-docs/current
-
+          echo "$SUBPROJECTS" | jq -r '.[]' | while read flink; do
+            FLINK_VERSION=`cd sdk/$flink && grep "def flinkVersion" build.gradle | sed "s/.*'\([0-9.]*\)'.*/\1/"`
+            echo "prepare API docs for sdk $RELEASE_VERSION and flink $FLINK_VERSION"
+            mkdir -p sdk/build/docs/decodable-pipeline-sdk/api-docs/$flink
+            mv sdk/$flink/build/docs/javadoc sdk/build/docs/decodable-pipeline-sdk/api-docs/$flink/current            
+          done
+      
       - name: Publish API Docs
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -106,7 +138,7 @@ jobs:
 
       - name: JReleaser Output
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jreleaser-release
           path: |
@@ -115,7 +147,13 @@ jobs:
 
       - name: Set Next Version
         run: |
-          echo "version=$NEXT_VERSION" > sdk/gradle.properties
+          echo "resetting main sdk next version $NEXT_VERSION"
+          sed -i "0,/version='[^']*'/s//version='$NEXT_VERSION'/" sdk/build.gradle
+          echo "$SUBPROJECTS" | jq -r '.[]' | while read flink; do
+            FLINK_VERSION=`cd sdk/$flink && grep "def flinkVersion" build.gradle | sed "s/.*'\([0-9.]*\)'.*/\1/"`
+            echo "resetting sdk next version $NEXT_VERSION for flink $FLINK_VERSION"
+            echo "version=$FLINK_VERSION-$NEXT_VERSION" > sdk/$flink/gradle.properties
+          done
           git config --global user.email "decodable-release-bot@decodable.co.invalid"
           git config --global user.name "decodable-release-bot"
           git commit -a -m "Next version ${{ env.NEXT_VERSION }}"
