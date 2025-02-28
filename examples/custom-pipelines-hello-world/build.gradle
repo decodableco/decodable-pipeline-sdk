@@ -16,9 +16,9 @@ group = 'co.decodable.examples'
 version = '0.2'
 
 ext {
-    flinkVersion = '1.16.3'
+    flinkVersion = '1.20.1'
     log4jVersion = '2.17.1'
-    sdkVersion = '1.0.0.Beta7'
+    sdkVersion = '1.20.1-1.0.0.Beta8'
 }
 
 repositories {
