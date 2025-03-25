@@ -59,7 +59,7 @@ jobs:
           sed -i 's/kafkaConnectorVersion = \x27.*\x27/kafkaConnectorVersion = \x27'"$KAFKA_CONNECTOR_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
 
       - name: Build SDK
-        run: cd sdk/${{ matrix.value }} && ../gradlew build publishToMavenLocal
+        run: cd sdk/${{ matrix.value.project-dir }} && ../gradlew build publishToMavenLocal
 
       - name: Build example project with Maven
         run: cd examples/custom-pipelines-hello-world && ./mvnw -B clean verify
