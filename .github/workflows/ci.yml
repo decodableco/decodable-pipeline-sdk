@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        value: [{flink: 1.16.3, kafka-connector: 1.16.3},{flink: 1.18.1, kafka-connector: 3.2.0-1.18},{flink: 1.19.2, kafka-connector: 3.3.0-1.19},{flink: 1.20.1, kafka-connector: 3.4.0-1.20}]
+        value: [{flink: 1.16.3, kafka-connector: 1.16.3, project-dir: flink-1.16},{flink: 1.18.1, kafka-connector: 3.2.0-1.18, project-dir: flink-1.18},{flink: 1.19.2, kafka-connector: 3.3.0-1.19, project-dir: flink-1.19},{flink: 1.20.1, kafka-connector: 3.4.0-1.20, project-dir: flink-1.20}]
 
     steps:
       - name: 'Check out repository'
@@ -48,7 +48,7 @@ jobs:
           FLINK_VERSION=${{ matrix.value.flink }}
           KAFKA_CONNECTOR_VERSION=${{ matrix.value.kafka-connector }}
           
-          echo "version=$FLINK_VERSION-$RELEASE_VERSION" > sdk/${{ matrix.value }}/gradle.properties
+          echo "version=$FLINK_VERSION-$RELEASE_VERSION" > sdk/${{ matrix.value.project-dir }}/gradle.properties
           sed -i 's/<decodable.pipeline.sdk.version>.*<\/decodable.pipeline.sdk.version>/<decodable.pipeline.sdk.version>'"$FLINK_VERSION-$RELEASE_VERSION"'<\/decodable.pipeline.sdk.version>/g' examples/custom-pipelines-hello-world/pom.xml
           sed -i 's/sdkVersion = \x27.*\x27/sdkVersion = \x27'"$FLINK_VERSION-$RELEASE_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
 
