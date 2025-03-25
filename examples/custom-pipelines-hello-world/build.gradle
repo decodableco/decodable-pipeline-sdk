@@ -17,6 +17,7 @@ version = '0.2'
 
 ext {
     flinkVersion = '1.20.1'
+    kafkaConnectorVersion = '3.4.0-1.20.1'
     log4jVersion = '2.17.1'
     sdkVersion = '1.20.1-1.0.0.Beta8'
 }
@@ -34,6 +35,7 @@ dependencies {
     annotationProcessor "co.decodable:decodable-pipeline-sdk:$sdkVersion"
 
     implementation "co.decodable:decodable-pipeline-sdk:$sdkVersion"
+    implementation "org.apache.flink:flink-connector-kafka:$kafkaConnectorVersion"
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation "org.apache.flink:flink-json:$flinkVersion"
 
