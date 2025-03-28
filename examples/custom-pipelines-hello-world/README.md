@@ -26,8 +26,8 @@ Run the following to build this example project using [Gradle](https://gradle.or
 
 Set the `job_file_path` property for the pipeline resource in _decodable-resources.yaml_ depending on your chosen build tool:
 
-* `target/custom-pipelines-hello-world-0.1.jar` when using Maven
-* `build/libs/custom-pipelines-hello-world-0.1-all.jar` when using Gradle
+* `target/custom-pipelines-hello-world-0.2.jar` when using Maven
+* `build/libs/custom-pipelines-hello-world-0.2-all.jar` when using Gradle
 
 Deploy the example to Decodable using the CLI:
 

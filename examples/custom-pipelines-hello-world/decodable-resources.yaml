@@ -133,7 +133,7 @@ spec:
     # entry_class: co.decodable.examples.cpdemo.TableAPIJob
     
     properties:
-        flink_version: 1.16-java11
+        flink_version: 1.19-java11
     execution:
       active: true
       task_count: 1

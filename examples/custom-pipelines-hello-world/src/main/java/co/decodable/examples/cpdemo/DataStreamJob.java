@@ -13,6 +13,8 @@ import static co.decodable.examples.cpdemo.DataStreamJob.PURCHASE_ORDERS_STREAM;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.api.connector.sink2.Sink;
+import org.apache.flink.api.connector.source.Source;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Counter;
 import org.apache.flink.metrics.SimpleCounter;
@@ -34,9 +36,28 @@ public class DataStreamJob {
 	static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
 	static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
 
-	public static void main(String[] args) throws Exception {
-		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+	private final  Source<String,?,?> source;
+    private final Sink<String> sink;
 
+	public DataStreamJob(Source<String,?,?> source, Sink<String> sink) {
+		this.source = source;
+		this.sink = sink;
+	}
+
+	public void run() throws Exception {
+		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+		DataStream<String> stream =
+			env.fromSource(source, WatermarkStrategy.noWatermarks(),
+ 				"[stream-purchase-orders] Purchase Orders Source")
+				.map(new NameConverter());
+
+		stream.sinkTo(sink)
+			.name("[stream-purchase-orders-processed] Purchase Orders Sink");
+
+		env.execute("Purchase Order Processor");
+	}
+	
+	public static void main(String[] args) throws Exception {
 		DecodableStreamSource<String> source =
 				DecodableStreamSource.<String>builder()
 					.withStreamName(PURCHASE_ORDERS_STREAM)
@@ -49,15 +70,8 @@ public class DataStreamJob {
 				.withSerializationSchema(new SimpleStringSchema())
 				.build();
 
-		DataStream<String> stream =
-			env.fromSource(source, WatermarkStrategy.noWatermarks(),
- 				"[stream-purchase-orders] Purchase Orders Source")
-				.map(new NameConverter());
-
-		stream.sinkTo(sink)
-			.name("[stream-purchase-orders-processed] Purchase Orders Sink");
-
-		env.execute("Purchase Order Processor");
+		var job = new DataStreamJob(source, sink);
+		job.run();
 	}
 
 	public static class NameConverter extends RichMapFunction<String, String> {

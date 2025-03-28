@@ -12,6 +12,8 @@ import co.decodable.sdk.pipeline.DecodableStreamSource;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
 import co.decodable.sdk.pipeline.metadata.SourceStreams;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.connector.sink2.Sink;
+import org.apache.flink.api.connector.source.Source;
 import org.apache.flink.formats.json.JsonDeserializationSchema;
 import org.apache.flink.formats.json.JsonSerializationSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -30,20 +32,17 @@ public class TableAPIJob {
   static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
   static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
 
-  public static void main(String[] strings) throws Exception {
+  private final  Source<PurchaseOrder,?,?> source;
+  private final Sink<PurchaseOrder> sink;
+
+  public TableAPIJob(Source<PurchaseOrder,?,?> source, Sink<PurchaseOrder> sink) {
+		this.source = source;
+		this.sink = sink;
+	}
+
+  public void run() throws Exception {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
-
-    DecodableStreamSource<PurchaseOrder> source =
-        DecodableStreamSource.<PurchaseOrder>builder()
-            .withStreamName(PURCHASE_ORDERS_STREAM)
-            .withDeserializationSchema(new JsonDeserializationSchema<>(PurchaseOrder.class))
-            .build();
-    DecodableStreamSink<PurchaseOrder> sink =
-        DecodableStreamSink.<PurchaseOrder>builder()
-            .withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
-            .withSerializationSchema(new JsonSerializationSchema<>())
-            .build();
 
     DataStream<PurchaseOrder> stream =
         env.fromSource(
@@ -87,6 +86,22 @@ public class TableAPIJob {
     resultStream.sinkTo(sink).name("[stream-purchase-orders-processed] Purchase Orders Sink");
 
     env.execute("Purchase Order Processor");
+  }
+
+  public static void main(String[] strings) throws Exception {
+    DecodableStreamSource<PurchaseOrder> source =
+        DecodableStreamSource.<PurchaseOrder>builder()
+            .withStreamName(PURCHASE_ORDERS_STREAM)
+            .withDeserializationSchema(new JsonDeserializationSchema<>(PurchaseOrder.class))
+            .build();
+    DecodableStreamSink<PurchaseOrder> sink =
+        DecodableStreamSink.<PurchaseOrder>builder()
+            .withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
+            .withSerializationSchema(new JsonSerializationSchema<>())
+            .build();
+
+    var job = new TableAPIJob(source, sink);
+    job.run();
   }
 
   // UDF
