@@ -7,9 +7,11 @@
  */
 package co.decodable.examples.cpdemo;
 
+import java.io.Serializable;
+
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PurchaseOrder {
+public class PurchaseOrder implements Serializable {
 
   @JsonProperty("order_id")
   public long orderId;

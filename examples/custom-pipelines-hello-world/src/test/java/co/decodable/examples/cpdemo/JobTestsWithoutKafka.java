@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.connector.sink2.Sink;
 import org.apache.flink.api.connector.sink2.SinkWriter;
-import org.apache.flink.connector.datagen.functions.FromElementsGeneratorFunction;
 import org.apache.flink.connector.datagen.source.DataGeneratorSource;
+import org.apache.flink.connector.datagen.source.GeneratorFunction;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -110,10 +110,26 @@ public class JobTestsWithoutKafka {
 
     public static class TestCollectionSource<OUT> extends DataGeneratorSource<OUT> {
 
-        @SuppressWarnings("unchecked")
         public TestCollectionSource(Class<OUT> type, Collection<OUT> data, TypeInformation<OUT> typeInfo) {
-            super(new FromElementsGeneratorFunction<>(
-                typeInfo,data.toArray((OUT[]) Array.newInstance(type, data.size()))), data.size(), typeInfo);
+            super(new FromListGeneratorFunction<>(type, data), data.size(), typeInfo);
+        }
+
+    }
+
+    public static class FromListGeneratorFunction<OUT> implements GeneratorFunction<Long,OUT> {
+
+        private final OUT[] array;
+
+        @SuppressWarnings("unchecked")
+        public FromListGeneratorFunction(Class<OUT> type,Collection<OUT> data) {
+            this.array = data.toArray((OUT[]) Array.newInstance(type, data.size()));
+        }
+        
+        @Override
+        public OUT map(Long value) throws Exception {
+            return value.intValue() < array.length 
+                ? array[value.intValue()]
+                : null; //NOTE: this would only occur in case DataGeneratorSource is wrongly initialized
         }
 
     }
@@ -145,8 +161,7 @@ public class JobTestsWithoutKafka {
 
         @SuppressWarnings("unchecked")
         public List<IN> getElements() {
-            return Collections.unmodifiableList(
-                    ELEMENTS.stream().map(e -> (IN) e).collect(Collectors.toList()));
+            return  (List<IN>) ELEMENTS;
         }
 
         public static void clearElements() {

@@ -26,7 +26,7 @@
 		<maven.compiler.source>${target.java.version}</maven.compiler.source>
 		<maven.compiler.target>${target.java.version}</maven.compiler.target>
 		<decodable.pipeline.sdk.version>1.19.2-1.0.0.Beta8</decodable.pipeline.sdk.version>
-		<flink.version>1.20.1</flink.version>
+		<flink.version>1.19.2</flink.version>
 		<log4j.version>2.17.1</log4j.version>
 	</properties>
 
@@ -87,6 +87,12 @@
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-clients</artifactId>
+			<version>${flink.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-connector-datagen</artifactId>
 			<version>${flink.version}</version>
 			<scope>test</scope>
 		</dependency>
