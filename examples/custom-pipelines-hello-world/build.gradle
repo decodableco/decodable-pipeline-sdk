@@ -31,21 +31,42 @@ application {
     mainClass = 'co.decodable.examples.cpdemo.DataStreamJob'
 }
 
+configurations {
+    // Dependencies which are provided by Flink at runtime should be excluded from the uber JAR.
+    // We use a custom configuration for this, which is similar to compileOnly except that we exclude it from
+    // shadowJar further down
+    excludeFromShadow
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // Include the excludeFromShadow configuration in the compile classpath
+    classpath += configurations.excludeFromShadow
+}
+
+tasks.withType(Javadoc).configureEach {
+    // Include the excludeFromShadow configuration in the compile classpath
+    classpath += configurations.excludeFromShadow
+}
+
 dependencies {
     annotationProcessor "co.decodable:decodable-pipeline-sdk:$sdkVersion"
 
     implementation "co.decodable:decodable-pipeline-sdk:$sdkVersion"
-    implementation "org.apache.flink:flink-connector-kafka:$kafkaConnectorVersion"
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation "org.apache.flink:flink-json:$flinkVersion"
 
-    compileOnly "org.apache.flink:flink-streaming-java:$flinkVersion"
-    compileOnly "org.apache.flink:flink-table-api-java:$flinkVersion"
-    compileOnly "org.apache.flink:flink-table-api-java-bridge:$flinkVersion"
-    compileOnly "org.apache.flink:flink-table-planner_2.12:$flinkVersion"
-    compileOnly "org.apache.flink:flink-table-common:$flinkVersion"
-    compileOnly "org.apache.flink:flink-table-runtime:$flinkVersion"
+    excludeFromShadow "org.apache.flink:flink-connector-kafka:$kafkaConnectorVersion"
+    excludeFromShadow "org.apache.flink:flink-streaming-java:$flinkVersion"
+    excludeFromShadow "org.apache.flink:flink-table-api-java:$flinkVersion"
+    excludeFromShadow "org.apache.flink:flink-table-api-java-bridge:$flinkVersion"
+    excludeFromShadow "org.apache.flink:flink-table-planner_2.12:$flinkVersion"
+    excludeFromShadow "org.apache.flink:flink-table-common:$flinkVersion"
+    excludeFromShadow "org.apache.flink:flink-table-runtime:$flinkVersion"
 
+    // Kafka connector is bundled with the Flink image used by Decodable
+    testImplementation "org.apache.flink:flink-connector-kafka:$kafkaConnectorVersion"
+    testImplementation 'software.amazon.msk:aws-msk-iam-auth:1.1.6'
+    testImplementation "org.apache.kafka:kafka-clients:3.4.0"
     testImplementation "org.apache.flink:flink-clients:$flinkVersion"
     testImplementation "org.apache.flink:flink-table-api-java:$flinkVersion"
     testImplementation "org.apache.flink:flink-table-api-java-bridge:$flinkVersion"
@@ -73,18 +94,10 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-configurations {
-    // compileOnly-scoped dependencies should be excluded from the uber JAR,
-    // but the compileOnly scope is not allowed to be resolved by Gradle.
-    // so we're deriving a configuration from it which we actually can resolve.
-    provided
-    provided.extendsFrom compileOnly
-}
-
 shadowJar {
   def exclude_modules = project
             .configurations
-            .provided
+            .excludeFromShadow
             .resolvedConfiguration
             .getLenientConfiguration()
             .getAllModuleDependencies()

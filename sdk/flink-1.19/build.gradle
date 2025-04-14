@@ -19,7 +19,7 @@ dependencies {
     // A Kafka connector with custom patches is supplied by the Decodable platform at runtime
     compileOnly "org.apache.flink:flink-connector-kafka:3.3.0-1.19"
 
-    // IAM library is now bundled (and shaded) with our CuPi Flink images
+    // IAM library and Kafka connector are bundled with Flink images used by Decodable
     testImplementation 'software.amazon.msk:aws-msk-iam-auth:1.1.6'
     testImplementation "org.apache.flink:flink-connector-kafka:3.3.0-1.19"
     testImplementation "org.apache.flink:flink-clients:$flinkVersion"
