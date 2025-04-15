@@ -27,6 +27,7 @@
 		<maven.compiler.target>${target.java.version}</maven.compiler.target>
 		<decodable.pipeline.sdk.version>1.20.1-1.0.0.Beta8</decodable.pipeline.sdk.version>
 		<flink.kafka.connector.version>3.4.0-1.20</flink.kafka.connector.version>
+		<aws.msk.iam.auth.version>1.1.6</aws.msk.iam.auth.version>
 		<flink.version>1.20.1</flink.version>
 		<log4j.version>2.17.1</log4j.version>
 	</properties>
@@ -36,11 +37,6 @@
 			<groupId>co.decodable</groupId>
 			<artifactId>decodable-pipeline-sdk</artifactId>
 			<version>${decodable.pipeline.sdk.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-connector-kafka</artifactId>
-			<version>${flink.kafka.connector.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -53,6 +49,12 @@
 			<version>${flink.version}</version>
     	</dependency>
 
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-connector-kafka</artifactId>
+			<version>${flink.kafka.connector.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-streaming-java</artifactId>
@@ -90,6 +92,12 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>software.amazon.msk</groupId>
+			<artifactId>aws-msk-iam-auth</artifactId>
+			<version>${aws.msk.iam.auth.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-clients</artifactId>
