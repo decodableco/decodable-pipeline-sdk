@@ -93,9 +93,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>software.amazon.msk</groupId>
-			<artifactId>aws-msk-iam-auth</artifactId>
-			<version>${aws.msk.iam.auth.version}</version>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-connector-kafka</artifactId>
+			<version>${flink.kafka.connector.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.18.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

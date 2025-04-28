@@ -19,8 +19,8 @@ dependencies {
     // A Kafka connector with custom patches is supplied by the Decodable platform at runtime
     compileOnly "org.apache.flink:flink-connector-kafka:3.3.0-1.19"
 
-    // IAM library and Kafka connector are bundled with Flink images used by Decodable
-    testImplementation 'software.amazon.msk:aws-msk-iam-auth:1.1.6'
+    // For some reason, with Flink 1.18+, the Redpanda testcontainer requires commons-codec to be added explicitly
+    testImplementation "commons-codec:commons-codec:1.18.0"
     testImplementation "org.apache.flink:flink-connector-kafka:3.3.0-1.19"
     testImplementation "org.apache.flink:flink-clients:$flinkVersion"
     testImplementation "org.apache.flink:flink-table-api-java:$flinkVersion"
