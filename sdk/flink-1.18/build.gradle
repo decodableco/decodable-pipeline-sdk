@@ -12,12 +12,14 @@ dependencies {
     api "org.apache.flink:flink-core:$flinkVersion"
     //NOTE: flink-connector-base is needed as of Flink 1.18
     implementation "org.apache.flink:flink-connector-base:$flinkVersion"
-    //NOTE: flink-connector-kafka released with different versioning schema starting with Flink 1.18
-    implementation "org.apache.flink:flink-connector-kafka:3.2.0-1.18"
     implementation "org.apache.flink:flink-streaming-java:$flinkVersion"
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-    implementation 'software.amazon.msk:aws-msk-iam-auth:1.1.6'
 
+    // NOTE: flink-connector-kafka released with different versioning schema starting with Flink 1.18
+    // A Kafka connector with custom patches is supplied by the Decodable platform at runtime
+    compileOnly "org.apache.flink:flink-connector-kafka:3.2.0-1.18"
+
+    testImplementation "org.apache.flink:flink-connector-kafka:3.2.0-1.18"
     testImplementation "org.apache.flink:flink-clients:$flinkVersion"
     testImplementation "org.apache.flink:flink-table-api-java:$flinkVersion"
     testImplementation "org.apache.flink:flink-table-api-java-bridge:$flinkVersion"
