@@ -89,12 +89,15 @@ jobs:
             workingDir=`pwd`
             echo "$SUBPROJECTS" | jq -r '.[]' | while read flink; do
                 FLINK_VERSION=`cd sdk/$flink && grep "def flinkVersion" build.gradle | sed "s/.*'\([0-9.]*\)'.*/\1/"`
+                KAFKA_CONNECTOR_VERSION=`cd sdk/$flink && grep "def kafkaConnectorVersion" build.gradle | sed "s/.*'\([0-9.-]*\)'.*/\1/"`
                     
                 ### patch example's dependencies for maven and gradle builds
                 sed -i 's/<decodable.pipeline.sdk.version>.*<\/decodable.pipeline.sdk.version>/<decodable.pipeline.sdk.version>'"$FLINK_VERSION-$RELEASE_VERSION"'<\/decodable.pipeline.sdk.version>/g' examples/custom-pipelines-hello-world/pom.xml
                 sed -i 's/<flink.version>.*<\/flink.version>/<flink.version>'"$FLINK_VERSION"'<\/flink.version>/g' examples/custom-pipelines-hello-world/pom.xml
+                sed -i 's/<flink.kafka.connector.version>.*<\/flink.kafka.connector.version>/<flink.kafka.connector.version>'"$KAFKA_CONNECTOR_VERSION"'<\/flink.kafka.connector.version>/g' examples/custom-pipelines-hello-world/pom.xml
                 sed -i 's/sdkVersion = \x27.*\x27/sdkVersion = \x27'"$FLINK_VERSION-$RELEASE_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
                 sed -i 's/flinkVersion = \x27.*\x27/flinkVersion = \x27'"$FLINK_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
+                sed -i 's/kafkaConnectorVersion = \x27.*\x27/kafkaConnectorVersion = \x27'"$KAFKA_CONNECTOR_VERSION"'\x27/g' examples/custom-pipelines-hello-world/build.gradle
 
                 echo "building and testing examples project with Maven using sdk $RELEASE_VERSION for flink $FLINK_VERSION"
                 cd examples/custom-pipelines-hello-world && ./mvnw -B clean verify
