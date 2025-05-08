@@ -19,8 +19,11 @@ import org.apache.flink.metrics.SimpleCounter;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.flink.util.jackson.JacksonMapperFactory;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.flink.formats.json.JsonDeserializationSchema;
+import org.apache.flink.formats.json.JsonSerializationSchema;
 
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
@@ -34,22 +37,24 @@ public class DataStreamJob {
 	static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
 	static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
 
+	static final ObjectMapper OBJECT_MAPPER = JacksonMapperFactory.createObjectMapper();
+
 	public static void main(String[] args) throws Exception {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		DecodableStreamSource<String> source =
-				DecodableStreamSource.<String>builder()
+		DecodableStreamSource<PurchaseOrder> source =
+				DecodableStreamSource.<PurchaseOrder>builder()
 					.withStreamName(PURCHASE_ORDERS_STREAM)
-					.withDeserializationSchema(new SimpleStringSchema())
+					.withDeserializationSchema(new JsonDeserializationSchema<>(PurchaseOrder.class, () -> OBJECT_MAPPER))
 					.build();
 
-		DecodableStreamSink<String> sink =
-			DecodableStreamSink.<String>builder()
+		DecodableStreamSink<PurchaseOrder> sink =
+			DecodableStreamSink.<PurchaseOrder>builder()
 				.withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
-				.withSerializationSchema(new SimpleStringSchema())
+				.withSerializationSchema(new JsonSerializationSchema<>(() -> OBJECT_MAPPER))
 				.build();
 
-		DataStream<String> stream =
+		DataStream<PurchaseOrder> stream =
 			env.fromSource(source, WatermarkStrategy.noWatermarks(),
  				"[stream-purchase-orders] Purchase Orders Source")
 				.map(new NameConverter());
@@ -60,7 +65,7 @@ public class DataStreamJob {
 		env.execute("Purchase Order Processor");
 	}
 
-	public static class NameConverter extends RichMapFunction<String, String> {
+	public static class NameConverter extends RichMapFunction<PurchaseOrder, PurchaseOrder> {
 
 		private static final long serialVersionUID = 1L;
 
@@ -77,11 +82,17 @@ public class DataStreamJob {
 		}
 
 		@Override
-		public String map(String value) throws Exception {
-			ObjectNode purchaseOrder = (ObjectNode) mapper.readTree(value);
-			purchaseOrder.put("customer_name", purchaseOrder.get("customer_name").asText().toUpperCase());
+		public PurchaseOrder map(PurchaseOrder order) throws Exception {
+			var newOrder = new PurchaseOrder(
+					order.orderId,
+					order.orderDate,
+					order.customerName.toUpperCase(),
+					order.price,
+					order.productId,
+					order.orderStatus
+			);
 			recordsProcessed.inc();
-			return mapper.writeValueAsString(purchaseOrder);
+			return newOrder;
 		}
 	}
 }

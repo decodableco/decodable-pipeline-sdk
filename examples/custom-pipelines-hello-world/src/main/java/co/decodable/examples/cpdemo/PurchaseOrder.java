@@ -27,4 +27,15 @@ public class PurchaseOrder {
 
   @JsonProperty("order_status")
   public boolean orderStatus;
+
+  public PurchaseOrder(long orderId, String orderDate, String customerName, double price, long productId, boolean orderStatus) {
+    this.orderId = orderId;
+    this.orderDate = orderDate;
+    this.customerName = customerName;
+    this.price = price;
+    this.productId = productId;
+    this.orderStatus = orderStatus;
+  }
+
+  public PurchaseOrder() {}
 }
