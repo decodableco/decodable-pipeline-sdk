@@ -69,12 +69,10 @@ public class DataStreamJob {
 
 		private static final long serialVersionUID = 1L;
 
-		private transient ObjectMapper mapper;
 		private Counter recordsProcessed;
 
 		@Override
 		public void open(Configuration parameters) throws Exception {
-			mapper = new ObjectMapper();
 			recordsProcessed = getRuntimeContext()
 				.getMetricGroup()
 				.addGroup("DecodableMetrics")
