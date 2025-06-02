@@ -14,16 +14,14 @@ import org.apache.flink.api.common.serialization.DeserializationSchema;
 @Incubating
 public interface DecodableStreamSourceBuilder<T> {
 
-  /**
-   * Specifies the name of the stream to read from. Either this or {@link #withStreamId(String)} may
-   * be used, but not both.
-   */
+  /** Specifies the name of the stream to read from. */
   DecodableStreamSourceBuilder<T> withStreamName(String streamName);
 
   /**
-   * Specifies the id of the stream to read from. Either this or {@link #withStreamName(String)} may
-   * be used, but not both.
+   * @deprecated Specifies the id of the stream to read from. Use {@link #withStreamName(String)}
+   *     instead.
    */
+  @Deprecated
   DecodableStreamSourceBuilder<T> withStreamId(String streamId);
 
   /** Specifies the start-up mode to use when reading from the stream. */
