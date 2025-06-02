@@ -123,9 +123,9 @@ spec:
     type: JAVA
     
     # When building with Maven
-    job_file_path: target/custom-pipelines-hello-world-0.2.jar
+    # job_file_path: target/custom-pipelines-hello-world-0.2.jar
     # When building with Gradle
-    # job_file_path: build/libs/custom-pipelines-hello-world-0.2-all.jar
+    job_file_path: build/libs/custom-pipelines-hello-world-0.2-all.jar
     
     # When running the DataStream API Job
     entry_class: co.decodable.examples.cpdemo.DataStreamJob
@@ -133,7 +133,7 @@ spec:
     # entry_class: co.decodable.examples.cpdemo.TableAPIJob
     
     properties:
-        flink_version: 1.16-java11
+        flink_version: 1.19-java11
     execution:
       active: true
       task_count: 1
