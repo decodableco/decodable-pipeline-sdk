@@ -35,6 +35,7 @@ public class DecodableStreamSourceBuilderImpl<T> implements DecodableStreamSourc
   }
 
   @Override
+  @Deprecated
   public DecodableStreamSourceBuilder<T> withStreamId(String streamId) {
     this.streamId = streamId;
     return this;

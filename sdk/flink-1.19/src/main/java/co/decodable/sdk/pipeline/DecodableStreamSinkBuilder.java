@@ -14,16 +14,14 @@ import org.apache.flink.api.common.serialization.SerializationSchema;
 @Incubating
 public interface DecodableStreamSinkBuilder<T> {
 
-  /**
-   * Specifies the name of the stream to write to. Either this or {@link #withStreamId(String)} may
-   * be used, but not both.
-   */
+  /** Specifies the name of the stream to write to. */
   DecodableStreamSinkBuilder<T> withStreamName(String streamName);
 
   /**
-   * Specifies the id of the stream to write to. Either this or {@link #withStreamName(String)} may
-   * be used, but not both.
+   * @deprecated Specifies the id of the stream to write to. Use {@link #withStreamName(String)}
+   *     instead.
    */
+  @Deprecated
   DecodableStreamSinkBuilder<T> withStreamId(String streamId);
 
   /** Specifies the serialization schema to be used. */

@@ -33,6 +33,7 @@ public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBui
   }
 
   @Override
+  @Deprecated
   public DecodableStreamSinkBuilder<T> withStreamId(String streamId) {
     this.streamId = streamId;
     return this;
