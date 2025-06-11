@@ -5,7 +5,7 @@
  *
  * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
  */
-package co.decodable.examples.cpdemo;
+package co.decodable.examples.cpdemo.model;
 
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -37,5 +37,6 @@ public class PurchaseOrder {
     this.orderStatus = orderStatus;
   }
 
+  //for Jackson
   public PurchaseOrder() {}
 }

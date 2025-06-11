@@ -28,7 +28,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.redpanda.RedpandaContainer;
 
 @Testcontainers
-public class JobTests {
+public class KeylessJobTests {
 
   static final String PURCHASE_ORDERS = "purchase-orders";
   static final String PURCHASE_ORDERS_PROCESSED = "purchase-orders-processed";
@@ -90,8 +90,8 @@ public class JobTests {
 
   static Stream<Arguments> provideJobEntryPoints() {
     return Stream.of(
-      Arguments.of(DataStreamJob.class.getSimpleName(),(ThrowingConsumer<String[]>)DataStreamJob::main),
-      Arguments.of(TableAPIJob.class.getSimpleName(),(ThrowingConsumer<String[]>)TableAPIJob::main)
+      Arguments.of(KeylessDataStreamJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeylessDataStreamJob::main),
+      Arguments.of(KeylessTableAPIJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeylessTableAPIJob::main)
     );
   }
 

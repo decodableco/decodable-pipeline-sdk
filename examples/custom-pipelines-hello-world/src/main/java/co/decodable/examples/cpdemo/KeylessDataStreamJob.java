@@ -7,9 +7,13 @@
  */
 package co.decodable.examples.cpdemo;
 
-import static co.decodable.examples.cpdemo.DataStreamJob.PURCHASE_ORDERS_PROCESSED_STREAM;
-import static co.decodable.examples.cpdemo.DataStreamJob.PURCHASE_ORDERS_STREAM;
+import static co.decodable.examples.cpdemo.KeylessDataStreamJob.PURCHASE_ORDERS_PROCESSED_STREAM;
+import static co.decodable.examples.cpdemo.KeylessDataStreamJob.PURCHASE_ORDERS_STREAM;
 
+import co.decodable.examples.cpdemo.model.KeylessPurchaseOrder;
+import co.decodable.examples.cpdemo.model.PurchaseOrder;
+import co.decodable.sdk.pipeline.serde.DecodableRecordDeserializationSchema;
+import co.decodable.sdk.pipeline.serde.DecodableRecordSerializationSchema;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
@@ -21,9 +25,6 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.jackson.JacksonMapperFactory;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.flink.formats.json.JsonDeserializationSchema;
-import org.apache.flink.formats.json.JsonSerializationSchema;
-
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
@@ -31,29 +32,27 @@ import co.decodable.sdk.pipeline.metadata.SourceStreams;
 
 @SourceStreams(PURCHASE_ORDERS_STREAM)
 @SinkStreams(PURCHASE_ORDERS_PROCESSED_STREAM)
-public class DataStreamJob {
+public class KeylessDataStreamJob {
 
 	static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
 	static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
 
-	static final ObjectMapper OBJECT_MAPPER = JacksonMapperFactory.createObjectMapper();
-
 	public static void main(String[] args) throws Exception {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		DecodableStreamSource<PurchaseOrder> source =
-				DecodableStreamSource.<PurchaseOrder>builder()
+		DecodableStreamSource<KeylessPurchaseOrder> source =
+				DecodableStreamSource.<KeylessPurchaseOrder>builder()
 					.withStreamName(PURCHASE_ORDERS_STREAM)
-					.withDeserializationSchema(new JsonDeserializationSchema<>(PurchaseOrder.class, () -> OBJECT_MAPPER))
+					.withRecordDeserializationSchema(new DecodableRecordDeserializationSchema<>(KeylessPurchaseOrder.class))
 					.build();
 
-		DecodableStreamSink<PurchaseOrder> sink =
-			DecodableStreamSink.<PurchaseOrder>builder()
+		DecodableStreamSink<KeylessPurchaseOrder> sink =
+			DecodableStreamSink.<KeylessPurchaseOrder>builder()
 				.withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
-				.withSerializationSchema(new JsonSerializationSchema<>(() -> OBJECT_MAPPER))
+				.withRecordSerializationSchema(new DecodableRecordSerializationSchema<>())
 				.build();
 
-		DataStream<PurchaseOrder> stream =
+		DataStream<KeylessPurchaseOrder> stream =
 			env.fromSource(source, WatermarkStrategy.noWatermarks(),
  				"[stream-purchase-orders] Purchase Orders Source")
 				.map(new NameConverter());
@@ -64,7 +63,7 @@ public class DataStreamJob {
 		env.execute("Purchase Order Processor");
 	}
 
-	public static class NameConverter extends RichMapFunction<PurchaseOrder, PurchaseOrder> {
+	public static class NameConverter extends RichMapFunction<KeylessPurchaseOrder, KeylessPurchaseOrder> {
 
 		private static final long serialVersionUID = 1L;
 
@@ -79,17 +78,17 @@ public class DataStreamJob {
 		}
 
 		@Override
-		public PurchaseOrder map(PurchaseOrder order) throws Exception {
+		public KeylessPurchaseOrder map(KeylessPurchaseOrder order) throws Exception {
 			var newOrder = new PurchaseOrder(
-					order.orderId,
-					order.orderDate,
-					order.customerName.toUpperCase(),
-					order.price,
-					order.productId,
-					order.orderStatus
+					order.getValue().orderId,
+					order.getValue().orderDate,
+					order.getValue().customerName.toUpperCase(),
+					order.getValue().price,
+					order.getValue().productId,
+					order.getValue().orderStatus
 			);
 			recordsProcessed.inc();
-			return newOrder;
+			return new KeylessPurchaseOrder(newOrder);
 		}
 	}
 }
