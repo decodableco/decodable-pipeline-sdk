@@ -116,6 +116,8 @@ shadowJar {
     }
 
     mergeServiceFiles()
+
+    relocate('org.apache.kafka.clients','org.apache.flink.kafka.shaded.org.apache.kafka.clients')
 }
 
 java {
