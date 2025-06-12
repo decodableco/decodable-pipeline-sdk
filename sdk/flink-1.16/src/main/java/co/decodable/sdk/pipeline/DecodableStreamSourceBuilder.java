@@ -7,6 +7,7 @@
  */
 package co.decodable.sdk.pipeline;
 
+import co.decodable.sdk.pipeline.serde.DecodableRecordDeserializationSchema;
 import co.decodable.sdk.pipeline.util.Incubating;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 
@@ -27,9 +28,20 @@ public interface DecodableStreamSourceBuilder<T> {
   /** Specifies the start-up mode to use when reading from the stream. */
   DecodableStreamSourceBuilder<T> withStartupMode(StartupMode startupMode);
 
-  /** Specifies the deserialization schema to be used. */
+  /**
+   * @deprecated Specifies the value only deserialization schema to be used. Use {@link
+   *     #withRecordDeserializationSchema(DecodableRecordDeserializationSchema)} instead.
+   */
+  @Deprecated
   DecodableStreamSourceBuilder<T> withDeserializationSchema(
       DeserializationSchema<T> deserializationSchema);
+
+  /**
+   * Specifies the record deserialization schema to be used which supports both key and value parts
+   * of a record.
+   */
+  DecodableStreamSourceBuilder<T> withRecordDeserializationSchema(
+      DecodableRecordDeserializationSchema<?> recordDeserializationSchema);
 
   /** Returns a new {@link DecodableStreamSource} for the given configuration. */
   DecodableStreamSource<T> build();
