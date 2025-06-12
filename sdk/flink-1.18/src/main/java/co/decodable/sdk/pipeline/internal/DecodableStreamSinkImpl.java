@@ -31,7 +31,8 @@ public class DecodableStreamSinkImpl<T> implements DecodableStreamSink<T> {
 
   @Override
   public DecodableWriter<T> createWriter(InitContext context) throws IOException {
-    return new DelegatingStatefulSinkWriter<T>(delegate.createWriter(context));
+    return new DelegatingStatefulSinkWriter<T>(
+        (StatefulSinkWriter<T, ?>) delegate.createWriter(context));
   }
 
   @Override
