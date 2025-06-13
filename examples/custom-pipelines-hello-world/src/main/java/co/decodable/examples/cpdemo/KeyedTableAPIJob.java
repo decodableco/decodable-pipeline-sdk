@@ -81,7 +81,7 @@ public class KeyedTableAPIJob {
 
     Table resultTable =
         tableEnv.sqlQuery(
-            "SELECT `key`, ROW(`value`.orderId, orderDate, upper_case(customerName), price, productId, orderStatus) as `value` FROM purchase_orders");
+          "SELECT `key`, ROW(orderId, orderDate, customerNameUC, price, productId, orderStatus) as `value` FROM (SELECT `key`, `value`.*, upper_case(`value`.customerName) as customerNameUC FROM purchase_orders)");
 
     DataStream<KeyedPurchaseOrder> resultStream =
         tableEnv.toDataStream(
