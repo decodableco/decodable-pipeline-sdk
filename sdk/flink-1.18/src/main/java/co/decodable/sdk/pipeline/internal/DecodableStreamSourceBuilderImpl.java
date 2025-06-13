@@ -13,6 +13,7 @@ import co.decodable.sdk.pipeline.EnvironmentAccess;
 import co.decodable.sdk.pipeline.StartupMode;
 import co.decodable.sdk.pipeline.internal.config.StreamConfig;
 import co.decodable.sdk.pipeline.internal.config.StreamConfigMapping;
+import co.decodable.sdk.pipeline.serde.DecodableRecordDeserializationSchema;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -20,13 +21,14 @@ import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.KafkaSourceBuilder;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
+import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema;
 
 public class DecodableStreamSourceBuilderImpl<T> implements DecodableStreamSourceBuilder<T> {
 
   private String streamId;
   private String streamName;
   private StartupMode startupMode;
-  private DeserializationSchema<T> deserializationSchema;
+  private KafkaRecordDeserializationSchema<?> recordDeserializationSchema;
 
   @Override
   public DecodableStreamSourceBuilder<T> withStreamName(String streamName) {
@@ -50,13 +52,22 @@ public class DecodableStreamSourceBuilderImpl<T> implements DecodableStreamSourc
   @Override
   public DecodableStreamSourceBuilder<T> withDeserializationSchema(
       DeserializationSchema<T> deserializationSchema) {
-    this.deserializationSchema = deserializationSchema;
+    this.recordDeserializationSchema =
+        KafkaRecordDeserializationSchema.valueOnly(deserializationSchema);
     return this;
   }
 
   @Override
+  public DecodableStreamSourceBuilder<T> withRecordDeserializationSchema(
+      DecodableRecordDeserializationSchema<?> recordDeserializationSchema) {
+    this.recordDeserializationSchema = recordDeserializationSchema;
+    return this;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
   public DecodableStreamSource<T> build() {
-    Objects.requireNonNull(deserializationSchema, "deserializationSchema");
+    Objects.requireNonNull(recordDeserializationSchema, "deserialization schema must be specified");
 
     Map<String, String> environment =
         EnvironmentAccess.getEnvironment().getEnvironmentConfiguration();
@@ -69,7 +80,7 @@ public class DecodableStreamSourceBuilderImpl<T> implements DecodableStreamSourc
             .setBootstrapServers(streamConfig.bootstrapServers())
             .setTopics(streamConfig.topic())
             .setProperties(toProperties(streamConfig.kafkaProperties()))
-            .setValueOnlyDeserializer(deserializationSchema);
+            .setDeserializer((KafkaRecordDeserializationSchema<T>) recordDeserializationSchema);
 
     if (streamConfig.startupMode() != null) {
       builder.setStartingOffsets(toOffsetsInitializer(streamConfig.startupMode()));

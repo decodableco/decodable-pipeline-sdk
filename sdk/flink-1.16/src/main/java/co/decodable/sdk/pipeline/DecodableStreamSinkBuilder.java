@@ -7,6 +7,7 @@
  */
 package co.decodable.sdk.pipeline;
 
+import co.decodable.sdk.pipeline.serde.DecodableRecordSerializationSchema;
 import co.decodable.sdk.pipeline.util.Incubating;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 
@@ -24,8 +25,19 @@ public interface DecodableStreamSinkBuilder<T> {
   @Deprecated
   DecodableStreamSinkBuilder<T> withStreamId(String streamId);
 
-  /** Specifies the serialization schema to be used. */
+  /**
+   * @deprecated Specifies the value only serialization schema to be used. Use {@link
+   *     #withRecordSerializationSchema(DecodableRecordSerializationSchema)} instead.
+   */
+  @Deprecated
   DecodableStreamSinkBuilder<T> withSerializationSchema(SerializationSchema<T> serializationSchema);
+
+  /**
+   * Specifies the key and value serialization schema to be used which supports both key and value
+   * parts of a record.
+   */
+  DecodableStreamSinkBuilder<T> withRecordSerializationSchema(
+      DecodableRecordSerializationSchema<?> recordSerializationSchema);
 
   /** Returns a new {@link DecodableStreamSink} for the given configuration. */
   DecodableStreamSink<T> build();

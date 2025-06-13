@@ -12,7 +12,7 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonPro
 public class PurchaseOrder {
 
   @JsonProperty("order_id")
-  public long id;
+  public long orderId;
 
   @JsonProperty("order_date")
   public String orderDate;
@@ -27,4 +27,21 @@ public class PurchaseOrder {
 
   @JsonProperty("order_status")
   public boolean orderStatus;
+
+  public PurchaseOrder() {}
+
+  public PurchaseOrder(
+      long orderId,
+      String orderDate,
+      String customerName,
+      double price,
+      long productId,
+      boolean orderStatus) {
+    this.orderId = orderId;
+    this.orderDate = orderDate;
+    this.customerName = customerName;
+    this.price = price;
+    this.productId = productId;
+    this.orderStatus = orderStatus;
+  }
 }

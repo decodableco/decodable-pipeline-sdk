@@ -7,13 +7,15 @@
  */
 package co.decodable.examples.cpdemo;
 
+import co.decodable.examples.cpdemo.model.KeylessPurchaseOrder;
+import co.decodable.examples.cpdemo.model.PurchaseOrder;
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
 import co.decodable.sdk.pipeline.metadata.SourceStreams;
+import co.decodable.sdk.pipeline.serde.DecodableRecordDeserializationSchema;
+import co.decodable.sdk.pipeline.serde.DecodableRecordSerializationSchema;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.formats.json.JsonDeserializationSchema;
-import org.apache.flink.formats.json.JsonSerializationSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.annotation.DataTypeHint;
@@ -24,9 +26,9 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.functions.ScalarFunction;
 
-@SourceStreams(TableAPIJob.PURCHASE_ORDERS_STREAM)
-@SinkStreams(TableAPIJob.PURCHASE_ORDERS_PROCESSED_STREAM)
-public class TableAPIJob {
+@SourceStreams(KeylessTableAPIJob.PURCHASE_ORDERS_STREAM)
+@SinkStreams(KeylessTableAPIJob.PURCHASE_ORDERS_PROCESSED_STREAM)
+public class KeylessTableAPIJob {
   static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
   static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
 
@@ -34,22 +36,25 @@ public class TableAPIJob {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
 
-    DecodableStreamSource<PurchaseOrder> source =
-        DecodableStreamSource.<PurchaseOrder>builder()
+    DecodableStreamSource<KeylessPurchaseOrder> source =
+        DecodableStreamSource.<KeylessPurchaseOrder>builder()
             .withStreamName(PURCHASE_ORDERS_STREAM)
-            .withDeserializationSchema(new JsonDeserializationSchema<>(PurchaseOrder.class))
+            .withRecordDeserializationSchema(new DecodableRecordDeserializationSchema<>(KeylessPurchaseOrder.class))
             .build();
-    DecodableStreamSink<PurchaseOrder> sink =
-        DecodableStreamSink.<PurchaseOrder>builder()
+
+    DecodableStreamSink<KeylessPurchaseOrder> sink =
+        DecodableStreamSink.<KeylessPurchaseOrder>builder()
             .withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
-            .withSerializationSchema(new JsonSerializationSchema<>())
+            .withRecordSerializationSchema(new DecodableRecordSerializationSchema<>())
             .build();
 
     DataStream<PurchaseOrder> stream =
         env.fromSource(
             source,
             WatermarkStrategy.noWatermarks(),
-            "[stream-purchase-orders] Purchase Orders Source");
+            "[stream-purchase-orders] Purchase Orders Source")
+                .map(KeylessPurchaseOrder::getValue)
+                .returns(PurchaseOrder.class);
 
     Table inputTable = tableEnv.fromDataStream(
         stream,
@@ -84,7 +89,9 @@ public class TableAPIJob {
                 DataTypes.FIELD("productId", DataTypes.BIGINT()),
                 DataTypes.FIELD("orderStatus", DataTypes.BOOLEAN())));
 
-    resultStream.sinkTo(sink).name("[stream-purchase-orders-processed] Purchase Orders Sink");
+    resultStream
+            .map(KeylessPurchaseOrder::new)
+            .sinkTo(sink).name("[stream-purchase-orders-processed] Purchase Orders Sink");
 
     env.execute("Purchase Order Processor");
   }

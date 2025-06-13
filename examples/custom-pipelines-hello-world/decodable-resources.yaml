@@ -123,14 +123,14 @@ spec:
     type: JAVA
     
     # When building with Maven
-    # job_file_path: target/custom-pipelines-hello-world-0.2.jar
+    # job_file_path: target/custom-pipelines-hello-world-0.3.jar
     # When building with Gradle
-    job_file_path: build/libs/custom-pipelines-hello-world-0.2-all.jar
+    job_file_path: build/libs/custom-pipelines-hello-world-0.3-all.jar
     
     # When running the DataStream API Job
-    entry_class: co.decodable.examples.cpdemo.DataStreamJob
+    entry_class: co.decodable.examples.cpdemo.KeylessDataStreamJob
     # When running the Table API Job
-    # entry_class: co.decodable.examples.cpdemo.TableAPIJob
+    # entry_class: co.decodable.examples.cpdemo.KeylessTableAPIJob
     
     properties:
         flink_version: 1.19-java11
