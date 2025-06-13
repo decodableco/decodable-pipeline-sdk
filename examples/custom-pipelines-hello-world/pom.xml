@@ -162,7 +162,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.5.3</version>
 				<executions>
 					<!-- Run shade goal on package phase -->
 					<execution>
@@ -179,6 +179,12 @@
 									<exclude>org.xerial.snappy:snappy-java</exclude>
 								</excludes>
 							</artifactSet>
+							<relocations>
+								<relocation>
+									<pattern>org.apache.kafka.clients</pattern>
+									<shadedPattern>org.apache.flink.kafka.shaded.org.apache.kafka.clients</shadedPattern>
+								</relocation>
+							</relocations>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
