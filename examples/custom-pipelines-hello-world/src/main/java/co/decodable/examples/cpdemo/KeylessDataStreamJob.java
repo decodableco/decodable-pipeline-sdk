@@ -22,9 +22,6 @@ import org.apache.flink.metrics.SimpleCounter;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
-import org.apache.flink.util.jackson.JacksonMapperFactory;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
-
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
