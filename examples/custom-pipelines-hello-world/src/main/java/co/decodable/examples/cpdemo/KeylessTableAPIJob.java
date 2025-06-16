@@ -45,7 +45,7 @@ public class KeylessTableAPIJob {
     DecodableStreamSink<KeylessPurchaseOrder> sink =
         DecodableStreamSink.<KeylessPurchaseOrder>builder()
             .withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
-            .withRecordSerializationSchema(new DecodableRecordSerializationSchema<>())
+            .withRecordSerializationSchema(new DecodableRecordSerializationSchema<>(PurchaseOrder.class))
             .build();
 
     DataStream<PurchaseOrder> stream =

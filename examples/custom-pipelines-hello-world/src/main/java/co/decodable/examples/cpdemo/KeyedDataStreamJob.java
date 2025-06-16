@@ -8,6 +8,7 @@
 package co.decodable.examples.cpdemo;
 
 import co.decodable.examples.cpdemo.model.KeyedPurchaseOrder;
+import co.decodable.examples.cpdemo.model.OrderKey;
 import co.decodable.examples.cpdemo.model.PurchaseOrder;
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
@@ -47,7 +48,7 @@ public class KeyedDataStreamJob {
     DecodableStreamSink<KeyedPurchaseOrder> sink =
             DecodableStreamSink.<KeyedPurchaseOrder>builder()
                     .withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
-                    .withRecordSerializationSchema(new DecodableRecordSerializationSchema<>())
+                    .withRecordSerializationSchema(new DecodableRecordSerializationSchema<>(OrderKey.class, PurchaseOrder.class))
                     .build();
 
     DataStream<KeyedPurchaseOrder> stream =

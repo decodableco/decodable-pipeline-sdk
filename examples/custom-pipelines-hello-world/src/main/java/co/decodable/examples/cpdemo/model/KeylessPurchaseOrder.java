@@ -15,7 +15,7 @@ public class KeylessPurchaseOrder extends DecodableAbstractStreamRecord<Void, Pu
     public KeylessPurchaseOrder() {}
 
     public KeylessPurchaseOrder(PurchaseOrder value) {
-        super(null, value);
+        super(value);
     }
 
 }
