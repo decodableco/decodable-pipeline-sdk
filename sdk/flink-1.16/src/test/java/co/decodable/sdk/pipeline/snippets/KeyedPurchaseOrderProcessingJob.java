@@ -42,7 +42,7 @@ public class KeyedPurchaseOrderProcessingJob {
 
     DecodableStreamSink<KeyedPurchaseOrder> sink = DecodableStreamSink.<KeyedPurchaseOrder>builder()
         .withStreamName(PURCHASE_ORDERS_PROCESSED_STREAM)
-        .withRecordSerializationSchema(new DecodableRecordSerializationSchema<>())
+        .withRecordSerializationSchema(new DecodableRecordSerializationSchema<>(OrderKey.class, PurchaseOrder.class))
         .build();
     // @end
 

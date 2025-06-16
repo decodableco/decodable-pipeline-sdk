@@ -26,6 +26,11 @@ public abstract class DecodableAbstractStreamRecord<K, V>
 
   public DecodableAbstractStreamRecord() {}
 
+  public DecodableAbstractStreamRecord(V value) {
+    this.key = null;
+    this.value = value;
+  }
+
   public DecodableAbstractStreamRecord(K key, V value) {
     this.key = key;
     this.value = value;
