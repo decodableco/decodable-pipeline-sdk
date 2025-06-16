@@ -19,12 +19,39 @@ public final class DecodableRecordSerializationSchema<T extends DecodableAbstrac
     implements KafkaRecordSerializationSchema<T> {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private final Class<?> keyType;
+  private final Class<?> valueType;
   private String targetTopic;
 
-  public DecodableRecordSerializationSchema() {}
+  public DecodableRecordSerializationSchema(Class<?> valueType) {
+    Objects.requireNonNull(valueType, "valueType must not be null");
+    this.keyType = null;
+    this.valueType = valueType;
+  }
 
-  public DecodableRecordSerializationSchema(String targetTopic) {
+  public DecodableRecordSerializationSchema(String targetTopic, Class<?> valueType) {
+    if (targetTopic == null || targetTopic.isBlank()) {
+      throw new IllegalArgumentException("targetTopic must not be null or blank");
+    }
     this.targetTopic = targetTopic;
+    this.keyType = null;
+    this.valueType = Objects.requireNonNull(valueType, "valueType must not be null");
+  }
+
+  public DecodableRecordSerializationSchema(Class<?> keyType, Class<?> valueType) {
+    this.keyType = Objects.requireNonNull(keyType, "keyType must not be null");
+    this.valueType = Objects.requireNonNull(valueType, "valueType must not be null");
+    SerializationConstraintsValidator.checkAllKeyFieldsPresentInValue(this.keyType, this.valueType);
+  }
+
+  public DecodableRecordSerializationSchema(
+      String targetTopic, Class<?> keyType, Class<?> valueType) {
+    if (targetTopic == null || targetTopic.isBlank()) {
+      throw new IllegalArgumentException("targetTopic must not be null or blank");
+    }
+    this.keyType = Objects.requireNonNull(keyType, "keyType must not be null");
+    this.valueType = Objects.requireNonNull(valueType, "valueType must not be null");
+    SerializationConstraintsValidator.checkAllKeyFieldsPresentInValue(this.keyType, this.valueType);
   }
 
   public String getTargetTopic() {
@@ -32,6 +59,9 @@ public final class DecodableRecordSerializationSchema<T extends DecodableAbstrac
   }
 
   public void setTargetTopic(String targetTopic) {
+    if (targetTopic == null || targetTopic.isBlank()) {
+      throw new IllegalArgumentException("targetTopic must not be null or blank");
+    }
     this.targetTopic = targetTopic;
   }
 
@@ -51,7 +81,7 @@ public final class DecodableRecordSerializationSchema<T extends DecodableAbstrac
           OBJECT_MAPPER.writeValueAsBytes(element.getKey()),
           OBJECT_MAPPER.writeValueAsBytes(element.getValue()));
     } catch (JsonProcessingException e) {
-      throw new RuntimeException(String.format("Could not serialize record '%s'.", element), e);
+      throw new RuntimeException(String.format("failed to serialize record '%s'.", element), e);
     }
   }
 }
