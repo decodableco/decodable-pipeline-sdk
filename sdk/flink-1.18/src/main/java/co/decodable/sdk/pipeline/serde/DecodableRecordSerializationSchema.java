@@ -24,9 +24,8 @@ public final class DecodableRecordSerializationSchema<T extends DecodableAbstrac
   private String targetTopic;
 
   public DecodableRecordSerializationSchema(Class<?> valueType) {
-    Objects.requireNonNull(valueType, "valueType must not be null");
     this.keyType = null;
-    this.valueType = valueType;
+    this.valueType = Objects.requireNonNull(valueType, "valueType must not be null");
   }
 
   public DecodableRecordSerializationSchema(String targetTopic, Class<?> valueType) {
