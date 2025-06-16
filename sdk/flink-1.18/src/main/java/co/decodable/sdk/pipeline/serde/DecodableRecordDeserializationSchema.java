@@ -33,14 +33,19 @@ public final class DecodableRecordDeserializationSchema<
   @Override
   public void deserialize(ConsumerRecord<byte[], byte[]> record, Collector<T> out)
       throws IOException {
-    var key = record.key();
-    var value = record.value();
-    var kvNode = OBJECT_MAPPER.createObjectNode();
-    kvNode.set(
-        KEY_FIELD_NAME, key != null ? OBJECT_MAPPER.readTree(key) : OBJECT_MAPPER.nullNode());
-    kvNode.set(
-        VALUE_FIELD_NAME, value != null ? OBJECT_MAPPER.readTree(value) : OBJECT_MAPPER.nullNode());
-    out.collect(OBJECT_MAPPER.treeToValue(kvNode, outputType));
+    try {
+      var key = record.key();
+      var value = record.value();
+      var kvNode = OBJECT_MAPPER.createObjectNode();
+      kvNode.set(
+          KEY_FIELD_NAME, key != null ? OBJECT_MAPPER.readTree(key) : OBJECT_MAPPER.nullNode());
+      kvNode.set(
+          VALUE_FIELD_NAME,
+          value != null ? OBJECT_MAPPER.readTree(value) : OBJECT_MAPPER.nullNode());
+      out.collect(OBJECT_MAPPER.treeToValue(kvNode, outputType));
+    } catch (Exception e) {
+      throw new IOException("failed to deserialize record", e);
+    }
   }
 
   @Override
