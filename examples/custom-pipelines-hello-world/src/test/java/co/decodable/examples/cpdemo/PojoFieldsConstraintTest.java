@@ -15,7 +15,7 @@ public class PojoFieldsConstraintTest {
 
   @ParameterizedTest
   @MethodSource("provideKeyAndValueClasses")
-  void checkAllKeyFieldsPresentInValueFields(Class<?> keyClass, Class<?> valueClass) {
+  void allKeyFieldsPresentInValueFieldsTest(Class<?> keyClass, Class<?> valueClass) {
     assertDoesNotThrow(() -> SerializationConstraintsValidator.checkAllKeyFieldsPresentInValue(keyClass, valueClass));
   }
 
