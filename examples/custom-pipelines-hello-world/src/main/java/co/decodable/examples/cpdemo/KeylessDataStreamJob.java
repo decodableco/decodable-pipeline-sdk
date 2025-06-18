@@ -10,7 +10,7 @@ package co.decodable.examples.cpdemo;
 import static co.decodable.examples.cpdemo.KeylessDataStreamJob.PURCHASE_ORDERS_PROCESSED_STREAM;
 import static co.decodable.examples.cpdemo.KeylessDataStreamJob.PURCHASE_ORDERS_STREAM;
 
-import co.decodable.examples.cpdemo.model.KeylessPurchaseOrder;
+import co.decodable.examples.cpdemo.model.append.KeylessPurchaseOrder;
 import co.decodable.examples.cpdemo.model.PurchaseOrder;
 import co.decodable.sdk.pipeline.serde.DecodableRecordDeserializationSchema;
 import co.decodable.sdk.pipeline.serde.DecodableRecordSerializationSchema;
@@ -51,13 +51,13 @@ public class KeylessDataStreamJob {
 
 		DataStream<KeylessPurchaseOrder> stream =
 			env.fromSource(source, WatermarkStrategy.noWatermarks(),
- 				"[stream-purchase-orders] Purchase Orders Source")
+ 				PURCHASE_ORDERS_STREAM)
 				.map(new NameConverter());
 
 		stream.sinkTo(sink)
-			.name("[stream-purchase-orders-processed] Purchase Orders Sink");
+			.name(PURCHASE_ORDERS_PROCESSED_STREAM);
 
-		env.execute("Purchase Order Processor");
+		env.execute("purchase order processor with keyless append streams");
 	}
 
 	public static class NameConverter extends RichMapFunction<KeylessPurchaseOrder, KeylessPurchaseOrder> {

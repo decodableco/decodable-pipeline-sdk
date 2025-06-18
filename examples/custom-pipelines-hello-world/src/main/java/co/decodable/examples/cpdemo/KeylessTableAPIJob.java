@@ -7,7 +7,7 @@
  */
 package co.decodable.examples.cpdemo;
 
-import co.decodable.examples.cpdemo.model.KeylessPurchaseOrder;
+import co.decodable.examples.cpdemo.model.append.KeylessPurchaseOrder;
 import co.decodable.examples.cpdemo.model.PurchaseOrder;
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
@@ -52,7 +52,7 @@ public class KeylessTableAPIJob {
         env.fromSource(
             source,
             WatermarkStrategy.noWatermarks(),
-            "[stream-purchase-orders] Purchase Orders Source")
+            PURCHASE_ORDERS_STREAM)
                 .map(KeylessPurchaseOrder::getValue)
                 .returns(PurchaseOrder.class);
 
@@ -91,9 +91,9 @@ public class KeylessTableAPIJob {
 
     resultStream
             .map(KeylessPurchaseOrder::new)
-            .sinkTo(sink).name("[stream-purchase-orders-processed] Purchase Orders Sink");
+            .sinkTo(sink).name(PURCHASE_ORDERS_PROCESSED_STREAM);
 
-    env.execute("Purchase Order Processor");
+    env.execute("purchase order processor with keyless append streams");
   }
 
   // UDF

@@ -7,10 +7,18 @@
  */
 package co.decodable.examples.cpdemo;
 
-import co.decodable.sdk.pipeline.testing.*;
-import co.decodable.sdk.pipeline.testing.KeyedPipelineTestContext.ThrowingConsumer;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.JsonNode;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import co.decodable.sdk.pipeline.testing.PipelineTestContext;
+import co.decodable.sdk.pipeline.testing.StreamRecord;
+import co.decodable.sdk.pipeline.testing.TestEnvironment;
+import co.decodable.sdk.pipeline.testing.PipelineTestContext.ThrowingConsumer;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,13 +27,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.redpanda.RedpandaContainer;
 
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @Testcontainers
-public class KeyedJobTests {
+public class KeylessAppendStreamJobTests {
 
   static final String PURCHASE_ORDERS = "purchase-orders";
   static final String PURCHASE_ORDERS_PROCESSED = "purchase-orders-processed";
@@ -46,13 +49,9 @@ public class KeyedJobTests {
             .withStreams(PURCHASE_ORDERS, PURCHASE_ORDERS_PROCESSED)
             .build();
 
-    try (KeyedPipelineTestContext ctx = new KeyedPipelineTestContext(testEnvironment)) {
-      String key1 =
-              "{\n"
-                + "  \"order_id\" : 19001\n"
-              + "}";
-      String value1 =
-              "{\n"
+    try (PipelineTestContext ctx = new PipelineTestContext(testEnvironment)) {
+      String value =
+          "{\n"
               + "  \"order_id\" : 19001,\n"
               + "  \"order_date\" : \"2023-06-09 10:18:38\",\n"
               + "  \"customer_name\" : \"Yolanda Hagenes\",\n"
@@ -60,13 +59,8 @@ public class KeyedJobTests {
               + "  \"product_id\" : 108,\n"
               + "  \"order_status\" : false\n"
               + "}";
-
-      String key2 =
-              "{\n"
-                + "  \"order_id\" : 19002\n"
-              + "}";
       String value2 =
-              "{\n"
+          "{\n"
               + "  \"order_id\" : 19002,\n"
               + "  \"order_date\" : \"2023-06-09 11:25:33\",\n"
               + "  \"customer_name\" : \"Erwin Mausepeter\",\n"
@@ -76,27 +70,28 @@ public class KeyedJobTests {
               + "}";
 
       // given
-      ctx.stream(PURCHASE_ORDERS).add(new KeyedStreamRecord<>(key1,value1));
-      ctx.stream(PURCHASE_ORDERS).add(new KeyedStreamRecord<>(key2,value2));
+      ctx.stream(PURCHASE_ORDERS).add(new StreamRecord<>(value));
+      ctx.stream(PURCHASE_ORDERS).add(new StreamRecord<>(value2));
 
       ctx.runJobAsync(mainMethod);
-      KeyedStreamRecord<String,String> result1 =
+
+      StreamRecord<String> result =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
-      KeyedStreamRecord<String,String> result2 =
+      StreamRecord<String> result2 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
-      JsonNode purchaseOrder1 = OBJECT_MAPPER.readTree(result1.value());
-      JsonNode purchaseOrder2 = OBJECT_MAPPER.readTree(result2.value());
+      ObjectNode purchaseOrder = (ObjectNode) OBJECT_MAPPER.readTree(result.value());
+      ObjectNode purchaseOrder2 = (ObjectNode) OBJECT_MAPPER.readTree(result2.value());
 
       // then
-      assertThat(purchaseOrder1.get("customer_name").asText()).isEqualTo("YOLANDA HAGENES");
+      assertThat(purchaseOrder.get("customer_name").asText()).isEqualTo("YOLANDA HAGENES");
       assertThat(purchaseOrder2.get("customer_name").asText()).isEqualTo("ERWIN MAUSEPETER");
     }
   }
 
   static Stream<Arguments> provideJobEntryPoints() {
     return Stream.of(
-      Arguments.of(KeyedDataStreamJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeyedDataStreamJob::main),
-      Arguments.of(KeyedTableAPIJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeyedTableAPIJob::main)
+      Arguments.of(KeylessDataStreamJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeylessDataStreamJob::main),
+      Arguments.of(KeylessTableAPIJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeylessTableAPIJob::main)
     );
   }
 

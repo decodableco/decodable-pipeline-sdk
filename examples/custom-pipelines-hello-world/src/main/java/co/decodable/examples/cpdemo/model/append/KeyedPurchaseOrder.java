@@ -5,8 +5,10 @@
  *
  * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
  */
-package co.decodable.examples.cpdemo.model;
+package co.decodable.examples.cpdemo.model.append;
 
+import co.decodable.examples.cpdemo.model.OrderKey;
+import co.decodable.examples.cpdemo.model.PurchaseOrder;
 import co.decodable.sdk.pipeline.DecodableAppendStreamRecord;
 
 public class KeyedPurchaseOrder extends DecodableAppendStreamRecord<OrderKey, PurchaseOrder> {

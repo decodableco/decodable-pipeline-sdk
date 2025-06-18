@@ -7,7 +7,7 @@
  */
 package co.decodable.examples.cpdemo;
 
-import co.decodable.examples.cpdemo.model.KeyedPurchaseOrder;
+import co.decodable.examples.cpdemo.model.append.KeyedPurchaseOrder;
 import co.decodable.examples.cpdemo.model.OrderKey;
 import co.decodable.examples.cpdemo.model.PurchaseOrder;
 import co.decodable.sdk.pipeline.DecodableStreamSink;
@@ -53,13 +53,13 @@ public class KeyedDataStreamJob {
 
     DataStream<KeyedPurchaseOrder> stream =
             env.fromSource(source, WatermarkStrategy.noWatermarks(),
-                            "[stream-purchase-orders] Purchase Orders Source")
+                            PURCHASE_ORDERS_STREAM)
                     .map(new NameConverter());
 
     stream.sinkTo(sink)
-            .name("[stream-purchase-orders-processed] Purchase Orders Sink");
+            .name(PURCHASE_ORDERS_PROCESSED_STREAM);
 
-    env.execute("Purchase Order Processor");
+    env.execute("purchase order processor with keyed append streams");
   }
 
   public static class NameConverter extends RichMapFunction<KeyedPurchaseOrder, KeyedPurchaseOrder> {
