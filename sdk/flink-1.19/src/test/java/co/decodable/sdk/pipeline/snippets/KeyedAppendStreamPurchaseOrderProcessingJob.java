@@ -50,12 +50,12 @@ public class KeyedAppendStreamPurchaseOrderProcessingJob {
     // @end
 
     DataStream<KeyedPurchaseOrder> stream = env.fromSource(source, WatermarkStrategy.noWatermarks(),
-                    "[stream-purchase-orders] Purchase Orders Source")
+                    PURCHASE_ORDERS_STREAM)
         .map(new PurchaseOrderProcessor());
 
-    stream.sinkTo(sink).name("[stream-purchase-orders-processed] Purchase Orders Sink");
+    stream.sinkTo(sink).name(PURCHASE_ORDERS_PROCESSED_STREAM);
 
-    env.execute("Purchase Order Processor");
+    env.execute("purchase order processor with keyed append streams");
   } // @end region="custom-pipeline"
 
   public static class PurchaseOrderProcessor extends RichMapFunction<KeyedPurchaseOrder, KeyedPurchaseOrder> {
