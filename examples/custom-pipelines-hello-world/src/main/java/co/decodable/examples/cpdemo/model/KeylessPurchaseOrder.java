@@ -7,9 +7,9 @@
  */
 package co.decodable.examples.cpdemo.model;
 
-import co.decodable.sdk.pipeline.DecodableAbstractStreamRecord;
+import co.decodable.sdk.pipeline.DecodableAppendStreamRecord;
 
-public class KeylessPurchaseOrder extends DecodableAbstractStreamRecord<Void, PurchaseOrder> {
+public class KeylessPurchaseOrder extends DecodableAppendStreamRecord<Void, PurchaseOrder> {
 
     //for Jackson
     public KeylessPurchaseOrder() {}
