@@ -22,7 +22,7 @@ public class SerializationConstraintsValidator {
     Objects.requireNonNull(keyType, "keyType must not be null");
     Objects.requireNonNull(valueType, "valueType must not be null");
     // NOTE: For "keyless" processing the default serializer might be used with keyType Void
-    // which means such a check doesn't need to / couldn't be performed anyway...
+    // which means such a check doesn't need to / couldn't be performed anyway.
     if (Void.class.equals(keyType)) {
       return;
     }

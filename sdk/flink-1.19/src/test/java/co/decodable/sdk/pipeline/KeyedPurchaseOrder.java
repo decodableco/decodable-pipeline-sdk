@@ -7,7 +7,7 @@
  */
 package co.decodable.sdk.pipeline;
 
-public class KeyedPurchaseOrder extends DecodableAbstractStreamRecord<OrderKey, PurchaseOrder> {
+public class KeyedPurchaseOrder extends DecodableAppendStreamRecord<OrderKey, PurchaseOrder> {
 
   // for Jackson
   public KeyedPurchaseOrder() {}

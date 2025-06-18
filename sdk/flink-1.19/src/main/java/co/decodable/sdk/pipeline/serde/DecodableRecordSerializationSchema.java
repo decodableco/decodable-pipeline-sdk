@@ -7,7 +7,7 @@
  */
 package co.decodable.sdk.pipeline.serde;
 
-import co.decodable.sdk.pipeline.DecodableAbstractStreamRecord;
+import co.decodable.sdk.pipeline.DecodableKeyedStreamRecord;
 import java.util.Objects;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
@@ -15,7 +15,7 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessin
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-public final class DecodableRecordSerializationSchema<T extends DecodableAbstractStreamRecord<?, ?>>
+public final class DecodableRecordSerializationSchema<T extends DecodableKeyedStreamRecord<?, ?>>
     implements KafkaRecordSerializationSchema<T> {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -48,6 +48,7 @@ public final class DecodableRecordSerializationSchema<T extends DecodableAbstrac
     if (targetTopic == null || targetTopic.isBlank()) {
       throw new IllegalArgumentException("targetTopic must not be null or blank");
     }
+    this.targetTopic = targetTopic;
     this.keyType = Objects.requireNonNull(keyType, "keyType must not be null");
     this.valueType = Objects.requireNonNull(valueType, "valueType must not be null");
     SerializationConstraintsValidator.checkAllKeyFieldsPresentInValue(this.keyType, this.valueType);
@@ -80,7 +81,7 @@ public final class DecodableRecordSerializationSchema<T extends DecodableAbstrac
           OBJECT_MAPPER.writeValueAsBytes(element.getKey()),
           OBJECT_MAPPER.writeValueAsBytes(element.getValue()));
     } catch (JsonProcessingException e) {
-      throw new RuntimeException(String.format("failed to serialize record '%s'.", element), e);
+      throw new RuntimeException(String.format("failed to serialize record: %s", element), e);
     }
   }
 }

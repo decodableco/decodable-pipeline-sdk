@@ -18,6 +18,9 @@ import co.decodable.sdk.pipeline.util.Incubating;
 @Incubating
 public interface DecodableKeyedStreamRecord<K, V> {
 
+  String DEFAULT_KEY_FIELD_NAME = "key";
+  String DEFAULT_VALUE_FIELD_NAME = "value";
+
   K getKey();
 
   V getValue();
