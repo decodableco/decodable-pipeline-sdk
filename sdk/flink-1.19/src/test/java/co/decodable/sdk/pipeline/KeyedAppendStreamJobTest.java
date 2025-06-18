@@ -9,7 +9,7 @@ package co.decodable.sdk.pipeline;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import co.decodable.sdk.pipeline.snippets.KeyedPurchaseOrderProcessingJob;
+import co.decodable.sdk.pipeline.snippets.KeyedAppendStreamPurchaseOrderProcessingJob;
 import co.decodable.sdk.pipeline.testing.*;
 import java.util.concurrent.TimeUnit;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.JsonNode;
@@ -20,7 +20,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.redpanda.RedpandaContainer;
 
 @Testcontainers // @start region="testing-custom-pipeline"
-public class KeyedDataStreamJobTest {
+public class KeyedAppendStreamJobTest {
 
   private static final String PURCHASE_ORDERS = "purchase-orders";
   private static final String PURCHASE_ORDERS_PROCESSED = "purchase-orders-processed";
@@ -66,7 +66,9 @@ public class KeyedDataStreamJobTest {
       ctx.stream(PURCHASE_ORDERS).add(new KeyedStreamRecord<>(key1, value1));
       ctx.stream(PURCHASE_ORDERS).add(new KeyedStreamRecord<>(key2, value2));
 
-      ctx.runJobAsync(KeyedPurchaseOrderProcessingJob::main);
+      // when
+      ctx.runJobAsync(KeyedAppendStreamPurchaseOrderProcessingJob::main);
+
       KeyedStreamRecord<String, String> result1 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
       KeyedStreamRecord<String, String> result2 =
