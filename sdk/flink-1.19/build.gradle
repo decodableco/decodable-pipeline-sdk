@@ -30,6 +30,7 @@ dependencies {
     testImplementation "org.apache.flink:flink-table-common:$flinkVersion"
     testImplementation "org.apache.flink:flink-table-runtime:$flinkVersion"
     testImplementation "org.apache.flink:flink-json:$flinkVersion"
+    testImplementation "org.apache.flink:flink-test-utils:$flinkVersion"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
     testImplementation 'org.testcontainers:redpanda:1.18.3'
     testImplementation 'org.testcontainers:junit-jupiter:1.18.3'
