@@ -127,3 +127,7 @@ java {
     withJavadocJar()
     withSourcesJar()
 }
+
+test {
+    maxHeapSize = "1024m"
+}
