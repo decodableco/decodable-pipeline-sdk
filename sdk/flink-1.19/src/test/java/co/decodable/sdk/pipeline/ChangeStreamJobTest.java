@@ -84,21 +84,27 @@ public class ChangeStreamJobTest {
 
       KeyedStreamRecord<String, String> result1 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
+      JsonNode purchaseOrder1Key = OBJECT_MAPPER.readTree(result1.key());
+      JsonNode purchaseOrder1 = OBJECT_MAPPER.readTree(result1.value());
+
       KeyedStreamRecord<String, String> result2 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
-      JsonNode purchaseOrder1 = OBJECT_MAPPER.readTree(result1.value());
+      JsonNode purchaseOrder2Key = OBJECT_MAPPER.readTree(result2.key());
       JsonNode purchaseOrder2 = OBJECT_MAPPER.readTree(result2.value());
 
       // then
       assertAll(
           // order 19001
+          () -> assertThat(purchaseOrder1Key.get("order_id").asLong()).isEqualTo(19001),
           () -> assertTrue(purchaseOrder1.get("before").isNull()),
           () ->
               assertThat(purchaseOrder1.get("after").get("customer_name").asText())
                   .isEqualTo("YOLANDA HAGENES"),
           () -> assertThat(purchaseOrder1.get("after").get("price").asDouble()).isEqualTo(15.0),
-          () -> assertThat(purchaseOrder1.get("after").get("product_id").asInt()).isEqualTo(108),
+          () -> assertThat(purchaseOrder1.get("after").get("product_id").asInt()).isEqualTo(108));
+      assertAll(
           // order 19002
+          () -> assertThat(purchaseOrder2Key.get("order_id").asLong()).isEqualTo(19002),
           () -> assertTrue(purchaseOrder2.get("before").isNull()),
           () ->
               assertThat(purchaseOrder2.get("after").get("customer_name").asText())
@@ -171,14 +177,18 @@ public class ChangeStreamJobTest {
 
       KeyedStreamRecord<String, String> result1 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
+      JsonNode purchaseOrder1Key = OBJECT_MAPPER.readTree(result1.key());
+      JsonNode purchaseOrder1 = OBJECT_MAPPER.readTree(result1.value());
+
       KeyedStreamRecord<String, String> result2 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
-      JsonNode purchaseOrder1 = OBJECT_MAPPER.readTree(result1.value());
+      JsonNode purchaseOrder2Key = OBJECT_MAPPER.readTree(result2.key());
       JsonNode purchaseOrder2 = OBJECT_MAPPER.readTree(result2.value());
 
       // then
       assertAll(
           // order 19001
+          () -> assertThat(purchaseOrder1Key.get("order_id").asLong()).isEqualTo(19001),
           () -> assertFalse(purchaseOrder1.get("before").isNull()),
           () ->
               assertThat(purchaseOrder1.get("before").get("customer_name").asText())
@@ -187,8 +197,10 @@ public class ChangeStreamJobTest {
               assertThat(purchaseOrder1.get("after").get("customer_name").asText())
                   .isEqualTo("YOLANDA HAGENES"),
           () -> assertThat(purchaseOrder1.get("after").get("price").asDouble()).isEqualTo(51.0),
-          () -> assertThat(purchaseOrder1.get("after").get("product_id").asInt()).isEqualTo(10),
+          () -> assertThat(purchaseOrder1.get("after").get("product_id").asInt()).isEqualTo(10));
+      assertAll(
           // order 19002
+          () -> assertThat(purchaseOrder2Key.get("order_id").asLong()).isEqualTo(19002),
           () -> assertFalse(purchaseOrder2.get("before").isNull()),
           () ->
               assertThat(purchaseOrder2.get("before").get("customer_name").asText())
@@ -250,21 +262,27 @@ public class ChangeStreamJobTest {
 
       KeyedStreamRecord<String, String> result1 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
+      JsonNode purchaseOrder1Key = OBJECT_MAPPER.readTree(result1.key());
+      JsonNode purchaseOrder1 = OBJECT_MAPPER.readTree(result1.value());
+
       KeyedStreamRecord<String, String> result2 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
-      JsonNode purchaseOrder1 = OBJECT_MAPPER.readTree(result1.value());
+      JsonNode purchaseOrder2Key = OBJECT_MAPPER.readTree(result2.key());
       JsonNode purchaseOrder2 = OBJECT_MAPPER.readTree(result2.value());
 
       // then
       assertAll(
           // order 19001
+          () -> assertThat(purchaseOrder1Key.get("order_id").asLong()).isEqualTo(19001),
           () ->
               assertThat(purchaseOrder1.get("before").get("customer_name").asText())
                   .isEqualTo("YOLANDA HAGENES"),
           () -> assertThat(purchaseOrder1.get("before").get("price").asDouble()).isEqualTo(51.0),
           () -> assertThat(purchaseOrder1.get("before").get("product_id").asInt()).isEqualTo(10),
-          () -> assertTrue(purchaseOrder1.get("after").isNull()),
+          () -> assertTrue(purchaseOrder1.get("after").isNull()));
+      assertAll(
           // order 19002
+          () -> assertThat(purchaseOrder2Key.get("order_id").asLong()).isEqualTo(19002),
           () ->
               assertThat(purchaseOrder2.get("before").get("customer_name").asText())
                   .isEqualTo("ERWIN MAUSEPETER"),

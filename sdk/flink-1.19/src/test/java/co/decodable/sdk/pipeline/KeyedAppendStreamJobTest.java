@@ -8,6 +8,7 @@
 package co.decodable.sdk.pipeline;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import co.decodable.sdk.pipeline.snippets.KeyedAppendStreamPurchaseOrderProcessingJob;
 import co.decodable.sdk.pipeline.testing.*;
@@ -71,14 +72,25 @@ public class KeyedAppendStreamJobTest {
 
       KeyedStreamRecord<String, String> result1 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
+      JsonNode purchaseOrder1Key = OBJECT_MAPPER.readTree(result1.key());
+      JsonNode purchaseOrder1 = OBJECT_MAPPER.readTree(result1.value());
+
       KeyedStreamRecord<String, String> result2 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
-      JsonNode purchaseOrder1 = OBJECT_MAPPER.readTree(result1.value());
+      JsonNode purchaseOrder2Key = OBJECT_MAPPER.readTree(result2.key());
       JsonNode purchaseOrder2 = OBJECT_MAPPER.readTree(result2.value());
 
       // then
-      assertThat(purchaseOrder1.get("customer_name").asText()).isEqualTo("YOLANDA HAGENES");
-      assertThat(purchaseOrder2.get("customer_name").asText()).isEqualTo("ERWIN MAUSEPETER");
+      assertAll(
+          () -> assertThat(purchaseOrder1Key.get("order_id").asLong()).isEqualTo(19001),
+          () ->
+              assertThat(purchaseOrder1.get("customer_name").asText())
+                  .isEqualTo("YOLANDA HAGENES"));
+      assertAll(
+          () -> assertThat(purchaseOrder2Key.get("order_id").asLong()).isEqualTo(19002),
+          () ->
+              assertThat(purchaseOrder2.get("customer_name").asText())
+                  .isEqualTo("ERWIN MAUSEPETER"));
     }
   }
 }
