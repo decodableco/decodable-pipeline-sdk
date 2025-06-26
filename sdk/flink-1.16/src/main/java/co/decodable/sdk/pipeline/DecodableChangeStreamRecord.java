@@ -7,35 +7,30 @@
  */
 package co.decodable.sdk.pipeline;
 
+import co.decodable.sdk.pipeline.util.Incubating;
 import java.util.Objects;
 
 /**
- * Abstract base class to represent one record in a Decodable stream as a key-value pair.
+ * Abstract base class to represent one record as a key-value pair in a Decodable change stream.
  *
  * @param <K> The key data type of this record
  * @param <V> The value data type of this record
  */
-public abstract class DecodableAbstractStreamRecord<K, V>
+@Incubating
+public abstract class DecodableChangeStreamRecord<K, V extends DecodableDebeziumEnvelope<?>>
     implements DecodableKeyedStreamRecord<K, V> {
-
-  public static final String KEY_FIELD_NAME = "key";
-  public static final String VALUE_FIELD_NAME = "value";
 
   private K key;
   private V value;
 
-  public DecodableAbstractStreamRecord() {}
+  public DecodableChangeStreamRecord() {}
 
-  public DecodableAbstractStreamRecord(V value) {
-    this.key = null;
-    this.value = value;
-  }
-
-  public DecodableAbstractStreamRecord(K key, V value) {
+  public DecodableChangeStreamRecord(K key, V value) {
     this.key = key;
     this.value = value;
   }
 
+  @Override
   public K getKey() {
     return key;
   }
@@ -44,6 +39,7 @@ public abstract class DecodableAbstractStreamRecord<K, V>
     this.key = key;
   }
 
+  @Override
   public V getValue() {
     return value;
   }
@@ -54,13 +50,13 @@ public abstract class DecodableAbstractStreamRecord<K, V>
 
   @Override
   public String toString() {
-    return "DecodableAbstractStreamRecord{" + "key=" + key + ", value=" + value + '}';
+    return "DecodableChangeStreamRecord{" + "key=" + key + ", value=" + value + '}';
   }
 
   @Override
   public boolean equals(Object o) {
     if (o == null || getClass() != o.getClass()) return false;
-    DecodableAbstractStreamRecord<?, ?> that = (DecodableAbstractStreamRecord<?, ?>) o;
+    DecodableChangeStreamRecord<?, ?> that = (DecodableChangeStreamRecord<?, ?>) o;
     return Objects.equals(key, that.key) && Objects.equals(value, that.value);
   }
 

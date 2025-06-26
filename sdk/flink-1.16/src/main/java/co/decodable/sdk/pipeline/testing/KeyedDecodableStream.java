@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 /**
- * Represents a data stream on the Decodable platform.
+ * Represents a keyed data stream on the Decodable platform.
  *
- * @param <K> The key type of this stream
- * @param <V> The value type of this stream
+ * @param <K> The key data type for a record in this stream
+ * @param <V> The value data type for a record in this stream
  */
 @Incubating
 public interface KeyedDecodableStream<K, V> {

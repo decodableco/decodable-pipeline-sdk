@@ -9,9 +9,10 @@
 /**
  * Infrastructure and utilities for (integration) testing custom Decodable pipelines.
  *
- * <p>Using a {@link PipelineTestContext}, you can produce elements for one or more Decodable
- * streams, run your custom pipeline, and assert the output elements of this pipeline on another
- * Decodable stream. It is recommended to use <a
+ * <p>Using a {@link co.decodable.sdk.pipeline.testing.PipelineTestContext} or a {@link
+ * co.decodable.sdk.pipeline.testing.KeyedPipelineTestContext}, you can produce elements for one or
+ * more Decodable streams, run your custom pipeline, and assert the output elements of this pipeline
+ * on another Decodable stream. It is recommended to use <a
  * href="https://testcontainers.com/">Testcontainers</a> for starting a Kafka or Redpanda broker to
  * be used for testing, as shown below:
  *

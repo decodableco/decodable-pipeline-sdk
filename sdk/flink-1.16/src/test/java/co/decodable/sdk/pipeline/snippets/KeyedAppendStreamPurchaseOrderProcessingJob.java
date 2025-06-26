@@ -7,12 +7,15 @@
  */
 package co.decodable.sdk.pipeline.snippets;
 
-import static co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob.PURCHASE_ORDERS_PROCESSED_STREAM;
-import static co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob.PURCHASE_ORDERS_STREAM;
+import static co.decodable.sdk.pipeline.snippets.KeyedAppendStreamPurchaseOrderProcessingJob.PURCHASE_ORDERS_PROCESSED_STREAM;
+import static co.decodable.sdk.pipeline.snippets.KeyedAppendStreamPurchaseOrderProcessingJob.PURCHASE_ORDERS_STREAM;
 
 import co.decodable.sdk.pipeline.*;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
 import co.decodable.sdk.pipeline.metadata.SourceStreams;
+import co.decodable.sdk.pipeline.model.OrderKey;
+import co.decodable.sdk.pipeline.model.PurchaseOrder;
+import co.decodable.sdk.pipeline.model.append.KeyedPurchaseOrder;
 import co.decodable.sdk.pipeline.serde.DecodableRecordDeserializationSchema;
 import co.decodable.sdk.pipeline.serde.DecodableRecordSerializationSchema;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -26,7 +29,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 // spotless:off
 @SourceStreams(PURCHASE_ORDERS_STREAM) // @start region="custom-pipeline"
 @SinkStreams(PURCHASE_ORDERS_PROCESSED_STREAM)
-public class KeyedPurchaseOrderProcessingJob {
+public class KeyedAppendStreamPurchaseOrderProcessingJob {
 
   static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
   static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
@@ -47,12 +50,12 @@ public class KeyedPurchaseOrderProcessingJob {
     // @end
 
     DataStream<KeyedPurchaseOrder> stream = env.fromSource(source, WatermarkStrategy.noWatermarks(),
-                    "[stream-purchase-orders] Purchase Orders Source")
+                    PURCHASE_ORDERS_STREAM)
         .map(new PurchaseOrderProcessor());
 
-    stream.sinkTo(sink).name("[stream-purchase-orders-processed] Purchase Orders Sink");
+    stream.sinkTo(sink).name(PURCHASE_ORDERS_PROCESSED_STREAM);
 
-    env.execute("Purchase Order Processor");
+    env.execute("purchase order processor with keyed append streams");
   } // @end region="custom-pipeline"
 
   public static class PurchaseOrderProcessor extends RichMapFunction<KeyedPurchaseOrder, KeyedPurchaseOrder> {
@@ -71,17 +74,18 @@ public class KeyedPurchaseOrderProcessingJob {
     // @end region="metric-group"
 
     @Override
-    public KeyedPurchaseOrder map(KeyedPurchaseOrder originalOrder) {
-      var newOrder = new PurchaseOrder(
-              originalOrder.getValue().orderId,
-              originalOrder.getValue().orderDate,
-              originalOrder.getValue().customerName.toUpperCase(),
-              originalOrder.getValue().price,
-              originalOrder.getValue().productId,
-              originalOrder.getValue().orderStatus
+    public KeyedPurchaseOrder map(KeyedPurchaseOrder keyedPurchaseOrder) {
+      var originalOrder = keyedPurchaseOrder.getValue();
+      var resultingOrder = new PurchaseOrder(
+              originalOrder.orderId,
+              originalOrder.orderDate,
+              originalOrder.customerName.toUpperCase(),
+              originalOrder.price,
+              originalOrder.productId,
+              originalOrder.orderStatus
       );
       recordsProcessed.inc();
-      return new KeyedPurchaseOrder(originalOrder.getKey(),newOrder);
+      return new KeyedPurchaseOrder(keyedPurchaseOrder.getKey(), resultingOrder);
     }
   }
 }
