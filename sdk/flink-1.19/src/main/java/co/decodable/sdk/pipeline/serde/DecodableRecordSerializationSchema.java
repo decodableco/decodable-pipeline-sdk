@@ -78,7 +78,9 @@ public final class DecodableRecordSerializationSchema<T extends DecodableKeyedSt
       Objects.requireNonNull(targetTopic, "target topic must not be missing");
       return new ProducerRecord<>(
           targetTopic,
-          OBJECT_MAPPER.writeValueAsBytes(element.getKey()),
+          (keyType != null && !Void.class.equals(keyType))
+              ? OBJECT_MAPPER.writeValueAsBytes(element.getKey())
+              : null,
           OBJECT_MAPPER.writeValueAsBytes(element.getValue()));
     } catch (JsonProcessingException e) {
       throw new RuntimeException(String.format("failed to serialize record: %s", element), e);
