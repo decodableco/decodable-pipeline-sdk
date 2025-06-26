@@ -25,13 +25,13 @@ import org.apache.flink.metrics.SimpleCounter;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
-import static co.decodable.examples.cpdemo.ChangeStreamProcessingJob.PURCHASE_ORDERS_PROCESSED_STREAM;
-import static co.decodable.examples.cpdemo.ChangeStreamProcessingJob.PURCHASE_ORDERS_STREAM;
+import static co.decodable.examples.cpdemo.ChangeStreamJob.PURCHASE_ORDERS_PROCESSED_STREAM;
+import static co.decodable.examples.cpdemo.ChangeStreamJob.PURCHASE_ORDERS_STREAM;
 
 // spotless:off
 @SourceStreams(PURCHASE_ORDERS_STREAM) // @start region="custom-pipeline"
 @SinkStreams(PURCHASE_ORDERS_PROCESSED_STREAM)
-public class ChangeStreamProcessingJob {
+public class ChangeStreamJob {
 
   static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
   static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";

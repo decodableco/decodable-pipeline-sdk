@@ -26,12 +26,12 @@ import org.apache.flink.metrics.SimpleCounter;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
-import static co.decodable.examples.cpdemo.KeylessDataStreamJob.PURCHASE_ORDERS_PROCESSED_STREAM;
-import static co.decodable.examples.cpdemo.KeylessDataStreamJob.PURCHASE_ORDERS_STREAM;
+import static co.decodable.examples.cpdemo.KeylessAppendStreamJob.PURCHASE_ORDERS_PROCESSED_STREAM;
+import static co.decodable.examples.cpdemo.KeylessAppendStreamJob.PURCHASE_ORDERS_STREAM;
 
 @SourceStreams(PURCHASE_ORDERS_STREAM)
 @SinkStreams(PURCHASE_ORDERS_PROCESSED_STREAM)
-public class KeyedDataStreamJob {
+public class KeyedAppendStreamJob {
 
   static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
   static final String PURCHASE_ORDERS_STREAM = "purchase-orders";

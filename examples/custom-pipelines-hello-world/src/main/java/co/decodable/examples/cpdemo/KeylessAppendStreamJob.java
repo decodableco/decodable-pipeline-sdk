@@ -7,8 +7,8 @@
  */
 package co.decodable.examples.cpdemo;
 
-import static co.decodable.examples.cpdemo.KeylessDataStreamJob.PURCHASE_ORDERS_PROCESSED_STREAM;
-import static co.decodable.examples.cpdemo.KeylessDataStreamJob.PURCHASE_ORDERS_STREAM;
+import static co.decodable.examples.cpdemo.KeylessAppendStreamJob.PURCHASE_ORDERS_PROCESSED_STREAM;
+import static co.decodable.examples.cpdemo.KeylessAppendStreamJob.PURCHASE_ORDERS_STREAM;
 
 import co.decodable.examples.cpdemo.model.append.KeylessPurchaseOrder;
 import co.decodable.examples.cpdemo.model.PurchaseOrder;
@@ -29,7 +29,7 @@ import co.decodable.sdk.pipeline.metadata.SourceStreams;
 
 @SourceStreams(PURCHASE_ORDERS_STREAM)
 @SinkStreams(PURCHASE_ORDERS_PROCESSED_STREAM)
-public class KeylessDataStreamJob {
+public class KeylessAppendStreamJob {
 
 	static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
 	static final String PURCHASE_ORDERS_STREAM = "purchase-orders";

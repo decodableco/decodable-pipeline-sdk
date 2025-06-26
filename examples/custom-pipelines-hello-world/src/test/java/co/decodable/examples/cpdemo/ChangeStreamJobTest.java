@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers // @start region="testing-custom-pipeline"
-public class ChangeStreamProcessingJobTest {
+public class ChangeStreamJobTest {
 
   private static final String PURCHASE_ORDERS = "purchase-orders";
   private static final String PURCHASE_ORDERS_PROCESSED = "purchase-orders-processed";
@@ -80,7 +80,7 @@ public class ChangeStreamProcessingJobTest {
       ctx.stream(PURCHASE_ORDERS).add(new KeyedStreamRecord<>(key2, value2));
 
       // when
-      ctx.runJobAsync(ChangeStreamProcessingJob::main);
+      ctx.runJobAsync(ChangeStreamJob::main);
 
       KeyedStreamRecord<String, String> result1 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
@@ -167,7 +167,7 @@ public class ChangeStreamProcessingJobTest {
       ctx.stream(PURCHASE_ORDERS).add(new KeyedStreamRecord<>(key2, value2));
 
       // when
-      ctx.runJobAsync(ChangeStreamProcessingJob::main);
+      ctx.runJobAsync(ChangeStreamJob::main);
 
       KeyedStreamRecord<String, String> result1 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
@@ -246,7 +246,7 @@ public class ChangeStreamProcessingJobTest {
       ctx.stream(PURCHASE_ORDERS).add(new KeyedStreamRecord<>(key2, value2));
 
       // when
-      ctx.runJobAsync(ChangeStreamProcessingJob::main);
+      ctx.runJobAsync(ChangeStreamJob::main);
 
       KeyedStreamRecord<String, String> result1 =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);

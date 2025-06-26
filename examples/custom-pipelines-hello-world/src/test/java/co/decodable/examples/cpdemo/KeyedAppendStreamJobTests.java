@@ -95,8 +95,8 @@ public class KeyedAppendStreamJobTests {
 
   static Stream<Arguments> provideJobEntryPoints() {
     return Stream.of(
-      Arguments.of(KeyedDataStreamJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeyedDataStreamJob::main),
-      Arguments.of(KeyedTableAPIJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeyedTableAPIJob::main)
+      Arguments.of(KeyedAppendStreamJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeyedAppendStreamJob::main),
+      Arguments.of(KeyedAppendStreamJobTableAPI.class.getSimpleName(),(ThrowingConsumer<String[]>) KeyedAppendStreamJobTableAPI::main)
     );
   }
 

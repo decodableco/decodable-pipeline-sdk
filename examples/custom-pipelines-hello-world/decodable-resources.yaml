@@ -127,11 +127,13 @@ spec:
     # When building with Gradle
     job_file_path: build/libs/custom-pipelines-hello-world-0.3-all.jar
     
-    # When running the DataStream API Job
-    entry_class: co.decodable.examples.cpdemo.KeylessDataStreamJob
-    # When running the Table API Job
-    # entry_class: co.decodable.examples.cpdemo.KeylessTableAPIJob
-    
+    # Select which job to run from the JAR file
+    # NOTE: when running the keyed append stream or change stream based variants of the example jobs,
+    # you'd need to redefine both purchase order stream resource definitions above to reflect this. Also, you'd
+    # need to either feed the source stream from a CDC source or use another pipeline for pre-processing
+    # since the REST resource used in the example currently only supports ingestion into unkeyed append streams.
+    entry_class: co.decodable.examples.cpdemo.KeylessAppendStreamJob
+
     properties:
         flink_version: 1.19-java11
     execution:

@@ -27,9 +27,9 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.functions.ScalarFunction;
 
-@SourceStreams(KeyedTableAPIJob.PURCHASE_ORDERS_STREAM)
-@SinkStreams(KeyedTableAPIJob.PURCHASE_ORDERS_PROCESSED_STREAM)
-public class KeyedTableAPIJob {
+@SourceStreams(KeyedAppendStreamJobTableAPI.PURCHASE_ORDERS_STREAM)
+@SinkStreams(KeyedAppendStreamJobTableAPI.PURCHASE_ORDERS_PROCESSED_STREAM)
+public class KeyedAppendStreamJobTableAPI {
   static final String PURCHASE_ORDERS_STREAM = "purchase-orders";
   static final String PURCHASE_ORDERS_PROCESSED_STREAM = "purchase-orders-processed";
 
@@ -106,7 +106,7 @@ public class KeyedTableAPIJob {
 
     resultStream.sinkTo(sink).name(PURCHASE_ORDERS_PROCESSED_STREAM);
 
-    env.execute("purchase order processor with keyed append streams");
+    env.execute("purchase order processor with keyed append streams and table API");
   }
 
   // UDF

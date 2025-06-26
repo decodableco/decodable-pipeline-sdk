@@ -90,8 +90,8 @@ public class KeylessAppendStreamJobTests {
 
   static Stream<Arguments> provideJobEntryPoints() {
     return Stream.of(
-      Arguments.of(KeylessDataStreamJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeylessDataStreamJob::main),
-      Arguments.of(KeylessTableAPIJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeylessTableAPIJob::main)
+      Arguments.of(KeylessAppendStreamJob.class.getSimpleName(),(ThrowingConsumer<String[]>) KeylessAppendStreamJob::main),
+      Arguments.of(KeylessAppendStreamJobTableAPI.class.getSimpleName(),(ThrowingConsumer<String[]>) KeylessAppendStreamJobTableAPI::main)
     );
   }
 
