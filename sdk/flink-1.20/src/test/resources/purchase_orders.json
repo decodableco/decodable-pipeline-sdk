@@ -1,0 +1,18 @@
+[
+  {
+    "order_id": 19001,
+    "order_date": "2023-06-09 10:18:38",
+    "customer_name": "Yolanda Hagenes",
+    "price": 15.00,
+    "product_id": 108,
+    "order_status": false
+  },
+  {
+    "order_id": 19002,
+    "order_date": "2023-06-09 11:25:33",
+    "customer_name": "Erwin Mausepeter",
+    "price": 35.00,
+    "product_id": 22,
+    "order_status": false
+  }
+]

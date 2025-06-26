@@ -9,7 +9,7 @@ package co.decodable.sdk.pipeline;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob;
+import co.decodable.sdk.pipeline.snippets.KeylessAppendStreamPurchaseOrderProcessingJob;
 import co.decodable.sdk.pipeline.testing.PipelineTestContext;
 import co.decodable.sdk.pipeline.testing.StreamRecord;
 import co.decodable.sdk.pipeline.testing.TestEnvironment;
@@ -22,8 +22,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.redpanda.RedpandaContainer;
 
 @Testcontainers // @start region="testing-custom-pipeline"
-@Deprecated
-public class DataStreamJobTest {
+public class KeylessAppendStreamJobTest {
 
   private static final String PURCHASE_ORDERS = "purchase-orders";
   private static final String PURCHASE_ORDERS_PROCESSED = "purchase-orders-processed";
@@ -64,8 +63,8 @@ public class DataStreamJobTest {
       ctx.stream(PURCHASE_ORDERS).add(new StreamRecord<>(value));
       ctx.stream(PURCHASE_ORDERS).add(new StreamRecord<>(value2));
 
-      // when (as an example, PurchaseOrderProcessingJob upper-cases the customer name)
-      ctx.runJobAsync(PurchaseOrderProcessingJob::main);
+      // when
+      ctx.runJobAsync(KeylessAppendStreamPurchaseOrderProcessingJob::main);
 
       StreamRecord<String> result =
           ctx.stream(PURCHASE_ORDERS_PROCESSED).takeOne().get(30, TimeUnit.SECONDS);
