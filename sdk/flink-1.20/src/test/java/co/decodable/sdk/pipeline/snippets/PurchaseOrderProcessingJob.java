@@ -12,9 +12,9 @@ import static co.decodable.sdk.pipeline.snippets.PurchaseOrderProcessingJob.PURC
 
 import co.decodable.sdk.pipeline.DecodableStreamSink;
 import co.decodable.sdk.pipeline.DecodableStreamSource;
-import co.decodable.sdk.pipeline.PurchaseOrder;
 import co.decodable.sdk.pipeline.metadata.SinkStreams;
 import co.decodable.sdk.pipeline.metadata.SourceStreams;
+import co.decodable.sdk.pipeline.model.PurchaseOrder;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
@@ -28,6 +28,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 // spotless:off
 @SourceStreams(PURCHASE_ORDERS_STREAM) // @start region="custom-pipeline"
 @SinkStreams(PURCHASE_ORDERS_PROCESSED_STREAM)
+@Deprecated
 public class PurchaseOrderProcessingJob {
 
   static final String PURCHASE_ORDERS_STREAM = "purchase-orders";

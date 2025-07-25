@@ -14,7 +14,7 @@
 
 	<groupId>co.decodable.examples</groupId>
 	<artifactId>custom-pipelines-hello-world</artifactId>
-	<version>0.2</version>
+	<version>0.3</version>
 	<packaging>jar</packaging>
 
 	<name>Decodable Pipeline SDK Example</name>
@@ -25,7 +25,7 @@
 		<scala.binary.version>2.12</scala.binary.version>
 		<maven.compiler.source>${target.java.version}</maven.compiler.source>
 		<maven.compiler.target>${target.java.version}</maven.compiler.target>
-		<decodable.pipeline.sdk.version>1.19.2-1.0.0.Beta9</decodable.pipeline.sdk.version>
+		<decodable.pipeline.sdk.version>1.19.2-1.0.0-SNAPSHOT</decodable.pipeline.sdk.version>
 		<flink.kafka.connector.version>3.3.0-1.19</flink.kafka.connector.version>
 		<aws.msk.iam.auth.version>1.1.6</aws.msk.iam.auth.version>
 		<flink.version>1.19.2</flink.version>
@@ -162,7 +162,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.5.3</version>
 				<executions>
 					<!-- Run shade goal on package phase -->
 					<execution>
@@ -179,10 +179,16 @@
 									<exclude>org.xerial.snappy:snappy-java</exclude>
 								</excludes>
 							</artifactSet>
+							<relocations>
+								<relocation>
+									<pattern>org.apache.kafka.clients</pattern>
+									<shadedPattern>org.apache.flink.kafka.shaded.org.apache.kafka.clients</shadedPattern>
+								</relocation>
+							</relocations>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>co.decodable.examples.cpdemo.DataStreamJob</mainClass>
+									<mainClass>co.decodable.examples.cpdemo.KeylessAppendStreamJob</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
@@ -197,6 +203,9 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>3.1.2</version>
+					<configuration>
+						<argLine>-Xmx1024m</argLine>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>

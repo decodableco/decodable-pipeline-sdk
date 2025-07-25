@@ -13,13 +13,13 @@ plugins {
 }
 
 group = 'co.decodable.examples'
-version = '0.2'
+version = '0.3'
 
 ext {
     flinkVersion = '1.19.2'
     kafkaConnectorVersion = '3.3.0-1.19'
     log4jVersion = '2.17.1'
-    sdkVersion = '1.19.2-1.0.0.Beta9'
+    sdkVersion = '1.19.2-1.0.0-SNAPSHOT'
 }
 
 repositories {
@@ -116,6 +116,8 @@ shadowJar {
     }
 
     mergeServiceFiles()
+
+    relocate('org.apache.kafka.clients','org.apache.flink.kafka.shaded.org.apache.kafka.clients')
 }
 
 java {
@@ -124,4 +126,8 @@ java {
     }
     withJavadocJar()
     withSourcesJar()
+}
+
+test {
+    maxHeapSize = "1024m"
 }

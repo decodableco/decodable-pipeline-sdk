@@ -22,6 +22,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.redpanda.RedpandaContainer;
 
 @Testcontainers // @start region="testing-custom-pipeline"
+@Deprecated
 public class DataStreamJobTest {
 
   private static final String PURCHASE_ORDERS = "purchase-orders";

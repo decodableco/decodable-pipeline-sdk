@@ -12,19 +12,21 @@ import co.decodable.sdk.pipeline.DecodableStreamSinkBuilder;
 import co.decodable.sdk.pipeline.EnvironmentAccess;
 import co.decodable.sdk.pipeline.internal.config.StreamConfig;
 import co.decodable.sdk.pipeline.internal.config.StreamConfigMapping;
+import co.decodable.sdk.pipeline.serde.DecodableRecordSerializationSchema;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
+import org.apache.flink.connector.kafka.sink.KafkaSinkBuilder;
 
 public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBuilder<T> {
 
   private String streamId;
   private String streamName;
   private SerializationSchema<T> serializationSchema;
+  private DecodableRecordSerializationSchema<?> recordSerializationSchema;
 
   @Override
   public DecodableStreamSinkBuilder<T> withStreamName(String streamName) {
@@ -47,8 +49,24 @@ public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBui
   }
 
   @Override
+  public DecodableStreamSinkBuilder<T> withRecordSerializationSchema(
+      DecodableRecordSerializationSchema<?> recordSerializationSchema) {
+    this.recordSerializationSchema = recordSerializationSchema;
+    return this;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
   public DecodableStreamSink<T> build() {
-    Objects.requireNonNull(serializationSchema, "serializationSchema");
+    if (serializationSchema != null && recordSerializationSchema != null) {
+      throw new IllegalStateException(
+          "only one of value serialization or record serialization schema may be specified");
+    }
+
+    if (serializationSchema == null && recordSerializationSchema == null) {
+      throw new IllegalStateException(
+          "either value serialization or record serialization schema must be specified");
+    }
 
     Map<String, String> environment =
         EnvironmentAccess.getEnvironment().getEnvironmentConfiguration();
@@ -56,14 +74,9 @@ public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBui
     StreamConfig streamConfig =
         new StreamConfigMapping(environment).determineConfig(streamName, streamId);
 
-    KafkaSink<T> delegate =
+    KafkaSinkBuilder<T> builder =
         KafkaSink.<T>builder()
             .setBootstrapServers(streamConfig.bootstrapServers())
-            .setRecordSerializer(
-                KafkaRecordSerializationSchema.builder()
-                    .setTopic(streamConfig.topic())
-                    .setValueSerializationSchema(serializationSchema)
-                    .build())
             .setDeliveryGuarantee(
                 "exactly-once".equals(streamConfig.deliveryGuarantee())
                     ? DeliveryGuarantee.EXACTLY_ONCE
@@ -71,9 +84,24 @@ public class DecodableStreamSinkBuilderImpl<T> implements DecodableStreamSinkBui
                         ? DeliveryGuarantee.AT_LEAST_ONCE
                         : DeliveryGuarantee.NONE)
             .setTransactionalIdPrefix(streamConfig.transactionalIdPrefix())
-            .setKafkaProducerConfig(toProperties(streamConfig.kafkaProperties()))
-            .build();
+            .setKafkaProducerConfig(toProperties(streamConfig.kafkaProperties()));
 
+    if (serializationSchema != null) {
+      builder.setRecordSerializer(
+          KafkaRecordSerializationSchema.builder()
+              .setTopic(streamConfig.topic())
+              .setValueSerializationSchema(serializationSchema)
+              .build());
+    }
+
+    if (recordSerializationSchema != null) {
+      if (recordSerializationSchema.getTargetTopic() == null) {
+        recordSerializationSchema.setTargetTopic(streamConfig.topic());
+      }
+      builder.setRecordSerializer((KafkaRecordSerializationSchema<T>) recordSerializationSchema);
+    }
+
+    KafkaSink<T> delegate = builder.build();
     return new DecodableStreamSinkImpl<T>(delegate);
   }
 
