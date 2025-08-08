@@ -131,7 +131,7 @@ jreleaser {
     gitRootSearch = true
     project {
         versionPattern = 'CUSTOM'
-        version='1.0.0-SNAPSHOT'
+        version='1.0.0.Alpha5'
         java {
             groupId = "${group}"
         }

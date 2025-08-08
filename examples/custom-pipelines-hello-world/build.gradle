@@ -16,10 +16,10 @@ group = 'co.decodable.examples'
 version = '0.3'
 
 ext {
-    flinkVersion = '1.19.2'
-    kafkaConnectorVersion = '3.3.0-1.19'
+    flinkVersion = '1.20.1'
+    kafkaConnectorVersion = '3.4.0-1.20'
     log4jVersion = '2.17.1'
-    sdkVersion = '1.19.2-1.0.0-SNAPSHOT'
+    sdkVersion = '1.20.1-1.0.0.Alpha5'
 }
 
 repositories {
