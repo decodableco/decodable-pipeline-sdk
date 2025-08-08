@@ -142,14 +142,10 @@ jreleaser {
     }
     deploy {
         maven {
-            nexus2 {
-                'maven-central' {
+            mavenCentral {
+                sonatype {
                     active = 'ALWAYS'
-                    url = 'https://s01.oss.sonatype.org/service/local'
-                    snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots'
-                    closeRepository = true
-                    releaseRepository = true
-                    sign = true
+                    url = 'https://central.sonatype.com/api/v1/publisher'
                     //NOTE: staging repositories added dynamically see below
                 }
             }
@@ -158,7 +154,7 @@ jreleaser {
 
     // adding all staging-deploy directories from subprojects
     subprojects.each { p ->
-        jreleaser.deploy.maven.nexus2.'maven-central'.stagingRepository("${p.buildDir}/staging-deploy")
+        jreleaser.deploy.maven.mavenCentral.sonatype.stagingRepository("${p.buildDir}/staging-deploy")
     }
 
     release {
