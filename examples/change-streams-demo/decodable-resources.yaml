@@ -1,0 +1,188 @@
+---
+kind: secret
+metadata:
+  name: mysql-demo-db-pwd
+  tags:
+    context: sdk-demo
+    team: devrel
+    purpose: example
+spec_version: v1
+spec:
+  value_literal: "$e(reT"
+---
+kind: stream
+metadata:
+  name: reviews
+  description: stream holding original review data
+  tags:
+    context: sdk-demo
+    team: devrel
+    purpose: example
+spec_version: v1
+spec:
+  schema_v2:
+    fields:
+      - kind: physical
+        name: id
+        type: BIGINT NOT NULL
+      - kind: physical
+        name: itemId
+        type: VARCHAR(255)
+      - kind: physical
+        name: reviewText
+        type: STRING
+    constraints:
+      primary_key:
+        - id
+  type: CHANGE
+  properties:
+    partition.count: "1"
+    compaction.enable: "false"
+    properties.compression.type: zstd
+  is_auto_schema_evolving: false
+---
+kind: stream
+metadata:
+  name: reviews_processed
+  description: stream holding processed review data
+  tags:
+    context: sdk-demo
+    team: devrel
+    purpose: example
+spec_version: v1
+spec:
+  schema_v2:
+    fields:
+      - kind: physical
+        name: id
+        type: BIGINT NOT NULL
+      - kind: physical
+        name: itemId
+        type: VARCHAR(255)
+      - kind: physical
+        name: reviewText
+        type: STRING
+      - kind: physical
+        name: charCount
+        type: INT
+    constraints:
+      primary_key:
+        - id
+  type: CHANGE
+  properties:
+    partition.count: "1"
+    compaction.enable: "false"
+    properties.compression.type: zstd
+  is_auto_schema_evolving: false
+---
+kind: stream
+metadata:
+  name: reviews_agg
+  description: stream holding aggregated reviews per item
+  tags:
+    context: sdk-demo
+    team: devrel
+    purpose: example
+spec_version: v1
+spec:
+  schema_v2:
+    fields:
+      - kind: physical
+        name: itemId
+        type: VARCHAR(255) NOT NULL
+      - kind: physical
+        name: cnt
+        type: BIGINT NOT NULL
+      - kind: physical
+        name: reviewTexts
+        type: MAP<STRING,STRING> NOT NULL
+    constraints:
+      primary_key:
+        - itemId
+  type: CHANGE
+  properties:
+    partition.count: "1"
+    compaction.enable: "false"
+    properties.compression.type: zstd
+  is_auto_schema_evolving: false
+---
+kind: connection
+metadata:
+  name: mysql_source
+  description: ""
+  tags:
+    context: sdk-demo
+    team: devrel
+    purpose: example
+spec_version: v2
+spec:
+  connector: mysql-cdc
+  type: source
+  stream_mappings:
+    - stream_name: reviews
+      external_resource_specifier:
+        database-name: demo
+        table-name: Review
+  properties:
+    # replace this with the actual mysql hostname after starting ngrok
+    hostname: "<YOUR_MYSQL_HOST>"
+    password: mysql-demo-db-pwd
+    # replace this with the actual mysql port after starting ngrok
+    port: "<YOUR_MYSQL_PORT>"
+    database-name: demo
+    ssl-mode: PREFERRED
+    scan.startup.mode: initial
+    username: flinkcdc
+  is_auto_schema_evolving: false
+  execution:
+    active: true
+    task_count: 1
+    task_size: M
+---
+kind: pipeline
+metadata:
+  name: reviews-processor
+  tags:
+    context: sdk-demo
+    team: devrel
+    purpose: example
+spec_version: v2
+spec:
+  type: JAVA
+  # maven build artifact
+  # job_file_path: target/change-streams-demo-0.1.jar
+  # gradle build artifact
+  job_file_path: build/libs/change-streams-demo-0.1-all.jar
+  entry_class: co.decodable.examples.reviews.datastream.ReviewProcessorJobChangeStreams
+  properties:
+    flink_version: 1.19-java11
+    additional_metrics: []
+    flink_configuration: {}
+  execution:
+    active: true
+    task_count: 1
+    task_size: M
+---
+kind: pipeline
+metadata:
+  name: reviews-agg-processor
+  tags:
+    context: sdk-demo
+    team: devrel
+    purpose: example
+spec_version: v2
+spec:
+  type: JAVA
+  # maven build artifact
+  # job_file_path: target/change-streams-demo-0.1.jar
+  # gradle build artifact
+  job_file_path: build/libs/change-streams-demo-0.1-all.jar
+  entry_class: co.decodable.examples.reviews.datastream.ReviewAggJobChangeStreams
+  properties:
+    flink_version: 1.19-java11
+    additional_metrics: []
+    flink_configuration: {}
+  execution:
+    active: true
+    task_count: 1
+    task_size: M

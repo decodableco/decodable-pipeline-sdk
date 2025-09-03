@@ -1,0 +1,7 @@
+version: "2"
+#TODO: copy & paste your auth token from https://dashboard.ngrok.com/get-started/your-authtoken
+authtoken: <YOUR_NGROK_AUTH_TOKEN_HERE>
+tunnels:
+  mysql:
+    addr: 3306
+    proto: tcp

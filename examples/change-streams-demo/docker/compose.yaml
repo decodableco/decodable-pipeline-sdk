@@ -1,0 +1,26 @@
+name: cupi-sdk-demo
+services:
+  mysql:
+    hostname: mysql
+    image: quay.io/debezium/example-mysql:3.2.1.Final
+    ports:
+      - "3306:3306"
+    command: ["--default-authentication-plugin=caching_sha2_password","--log-bin=binlog","--server-id=12345"]
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_USER=mysqluser
+      - MYSQL_PASSWORD=mysqlpw
+      - TZ=UTC
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 2
+      start_period: 0s
+    volumes:
+      - ./db/mysql/init.sql:/docker-entrypoint-initdb.d/mysql_init.sql
+    networks:
+      - demo-network
+networks:
+  demo-network:
+    name: cupi-sdk-demo
