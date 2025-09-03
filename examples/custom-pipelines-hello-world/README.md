@@ -1,12 +1,20 @@
-# Custom Pipelines Hello World Example
+# Custom Pipelines Example Jobs using the SDK
 
-This is a simple Flink job which uses the Decodable Custom Pipelines SDK.
-It takes data from one Decodable stream, _purchase-orders_, processes the data (simply upper-casing the customer name of each purchase order record), and writes the modified records to another stream, _purchase\_order\_processed_.
+This project contains several basic Flink jobs which use the Decodable Custom Pipelines SDK.
+The jobs are all centered around the same example which is about consuming data from one Decodable stream, _purchase-orders_, processing the records (upper-casing the customer name of each purchase order record), and writing the modified records to another stream, _purchase\_order\_processed_.
 
-The job is implemented twice, showing two different flavours:
+The example is implemented in a few different flavours, demonstrating how to work with:
 
-* **[DataStreamJob.java](./src/main/java/co/decodable/examples/cpdemo/DataStreamJob.java)** (using Flink's DataStream API)
-* **[TableAPIJob.java](./src/main/java/co/decodable/examples/cpdemo/TableAPIJob.java)** (using Flink's Table API)
+* **keyed and keyless append streams** using both Flink's DataStream API and Table API 
+  * [KeyedAppendStreamJob.java](./src/main/java/co/decodable/examples/cpdemo/KeyedAppendStreamJob.java)
+  * [KeyedAppendStreamJobTableAPI.java](./src/main/java/co/decodable/examples/cpdemo/KeyedAppendStreamJobTableAPI.java)
+  * [Keyed2KeylessAppendStreamJob.java](./src/main/java/co/decodable/examples/cpdemo/Keyed2KeylessAppendStreamJob.java)
+  * [KeylessAppendStreamJob.java](./src/main/java/co/decodable/examples/cpdemo/KeylessAppendStreamJob.java)
+  * [KeylessAppendStreamJobTableAPI.java](./src/main/java/co/decodable/examples/cpdemo/KeylessAppendStreamJobTableAPI.java)
+  * [Keyless2KeyedAppendStreamJob.java](./src/main/java/co/decodable/examples/cpdemo/Keyless2KeyedAppendStreamJob.java)
+
+* **change streams** using Flink's DataStream API
+  * [ChangeStreamJob.java](./src/main/java/co/decodable/examples/cpdemo/ChangeStreamJob.java) 
 
 ## Build
 
@@ -26,8 +34,8 @@ Run the following to build this example project using [Gradle](https://gradle.or
 
 Set the `job_file_path` property for the pipeline resource in _decodable-resources.yaml_ depending on your chosen build tool:
 
-* `target/custom-pipelines-hello-world-0.2.jar` when using Maven
-* `build/libs/custom-pipelines-hello-world-0.2-all.jar` when using Gradle
+* `target/custom-pipelines-hello-world-0.3.jar` when using Maven
+* `build/libs/custom-pipelines-hello-world-0.3-all.jar` when using Gradle
 
 Deploy the example to Decodable using the CLI:
 
